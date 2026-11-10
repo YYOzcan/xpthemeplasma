@@ -59,7 +59,7 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
            "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
-           "$DATA/kwin/tabbox/xp_alttab"
+           "$DATA/kwin/tabbox/xp_alttab" "$BIN/xp-notdefteri"
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -137,6 +137,18 @@ if [[ -f "$XPD/stil/luna.msstyles" ]]; then
         [[ -n "$fam" ]] && ! fc-list ":family=$fam" | grep -q . && cp "$f" "$DATA/fonts/xpthemeplasma/"
     done
     fc-cache -f "$DATA/fonts" >/dev/null 2>&1 || true
+fi
+
+echo "==> XP programları (yalnızca XP oturumunda görünür)"
+XPAPP="$DATA/xpthemeplasma/data/applications"
+mkdir -p "$XPAPP" build/bin
+if command -v g++ >/dev/null && pkg-config --exists Qt6Widgets Qt6PrintSupport; then
+    g++ -std=c++17 -O2 -fPIC apps/notdefteri/notdefteri.cpp -o build/bin/xp-notdefteri \
+        $(pkg-config --cflags --libs Qt6Widgets Qt6PrintSupport) \
+        && install -Dm755 build/bin/xp-notdefteri "$BIN/xp-notdefteri" \
+        && install -Dm644 apps/notdefteri/xp-notdefteri.desktop "$XPAPP/xp-notdefteri.desktop"
+else
+    echo "    (g++/Qt6 geliştirme dosyaları yok: Not Defteri derlenmedi)"
 fi
 
 echo "==> Komut İstemi (XP) ve yazı tipi işleme"

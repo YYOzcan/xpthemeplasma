@@ -10,8 +10,26 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 |---|---|---|
 | ![](screenshots/baslat-menusu.png) | ![](screenshots/karsilama.png) | ![](screenshots/kapat.png) |
 
-> Hiçbir Microsoft dosyası (msstyles, bitmap, Bliss fotoğrafı, ses, logo) kullanılmaz.
-> Bütün görseller `tools/` altındaki Python betikleriyle Luna paletine göre **sıfırdan çizilir**.
+İki kipte çalışır:
+
+* **Çizim kipi** (varsayılan): depoda hiçbir Microsoft dosyası yoktur; görseller `tools/` altındaki
+  Python betikleriyle Luna paletine göre sıfırdan çizilir.
+* **Gerçek XP kipi**: kendi Windows XP kopyan varsa (ISO, CD'nin `I386` klasörü ya da bir XP
+  kurulumunun `WINDOWS` klasörü) `bash kur.sh --xp <yol>` her şeyi oradan alır — XP'yi kurmuşsun gibi:
+
+  | | Kaynak |
+  |---|---|
+  | Pencere çerçevesi, düğmeler, kaydırma çubukları, sekmeler… | `luna.msstyles` bitmap'leri (msstyles ayrıştırıcı) |
+  | Görev çubuğu, tepsi, "Başlat" düğmesi, Başlat paneli | `luna.msstyles` + `explorer.exe` (Türkçe XP'de "Başlat") |
+  | Windows XP simge teması (~300 ad) | `shell32.dll`, `explorer.exe`, `netshell.dll`, `*.cpl`, uygulama `.exe`'leri |
+  | İmleçler (XP işaretçi gölgesiyle) | `user32.dll` |
+  | Ses düzeni (açılış, kapanış, hata, aygıt takma…) | `xp*.wav` |
+  | Bliss ve diğer 19 duvar kağıdı | `I386\*.jpg` |
+  | Açılış ekranı (kayan mavi bloklar) | `ntoskrnl.exe` (kaynakta siyah tutulan palet yeniden kuruldu) |
+  | Hoş geldiniz ekranı | `logonui.exe` |
+  | Komut İstemi: Terminal raster yazı tipi, XP açılış metni | `vga857.fon`, `cmd.exe` ileti tablosu |
+
+  Bu dosyalar `~/.local/share/xpthemeplasma/xp` altına çıkarılır, depoya girmez.
 
 ## İçerik
 
@@ -28,12 +46,19 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 | **Hoş geldiniz** (SDDM) | XP karşılama ekranı: kullanıcı kutucukları, yeşil ok, Bilgisayarı kapat, oturum seçici | `sddm/xpthemeplasma` |
 | **Tepe** duvar kağıdı | Bliss'ten esinlenmiş, prosedürel yeşil tepe + mavi gök | `tools/gen_wallpaper.py` |
 | **XPLuna** renk şeması | `#ECE9D8` yüzey, `#316AC5` seçim | `plasma/color_scheme` |
+| **Tüm Programlar** | XP düzeni: Donatılar (Erişilebilirlik, Eğlence, İletişim, Sistem Araçları), Başlangıç, Oyunlar; uygulamalar XP adlarıyla (Not Defteri, Paint, Hesap Makinesi, Internet Explorer, Windows Media Player…) | `xpstart/.../code/xpdizin.js` |
+| **Not Defteri** | XP Not Defteri'nin menüleri ve iletileriyle Qt metin düzenleyici (yalnızca XP oturumunda görünür, `.txt` varsayılanı) | `apps/notdefteri` |
+| **XP Alt+Tab** | CoolSwitch: 3B yüzey, simge ızgarası, çökük başlık kutusu | `kwin/tabbox/xp_alttab` |
+| **XP Komut İstemi** | Konsole profili: Terminal raster yazı tipi, 80×25, `C:\Documents and Settings\…>` istemi | `session/konsole` |
+| Yazı tipi işleme | XP oturumunda küçük Tahoma kenar yumuşatmasız (XP "Standart" yumuşatma) | `session/xp-fonts.conf` |
+| Animasyonlar | XP oturumunda pencere solması kapalı; menü solması, küçültme/büyütme açık | `session/xp-profil` |
 | Türkçe | Başlat, Tüm Programlar, Belgelerim, Bilgisayarım, Denetim Masası… (XP'nin Türkçe terimleri) | `po/tr` |
 
 ## Kurulum
 
 ```bash
 bash kur.sh                    # görselleri üretir, ~/.local ve ~/.config altına kurar (sudo gerekmez)
+bash kur.sh --xp "/yol/Windows XP.iso"   # (isteğe bağlı) kendi XP kopyandan gerçek varlıklar
 sudo bash kur.sh --sistem      # SDDM oturum girdisi, /usr/local/bin/startxp-wayland, XP karşılama teması
 sudo bash kur.sh --sddm-xp     # (isteğe bağlı) SDDM'de XP karşılama ekranını etkinleştir
 ```

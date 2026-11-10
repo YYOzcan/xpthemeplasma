@@ -22,6 +22,7 @@ var ESLEME = [
     ["vlc.desktop", "Windows Media Player", "ust"],
     ["org.kde.haruna.desktop", "Windows Media Player", "ust"],
     ["mpv.desktop", "Windows Media Player", "ust"],
+    ["xp-notdefteri.desktop", "Not Defteri", "don"],
     ["org.kde.kwrite.desktop", "Not Defteri", "don"],
     ["org.kde.kate.desktop", "Not Defteri", "don"],
     ["org.kde.kcalc.desktop", "Hesap Makinesi", "don"],

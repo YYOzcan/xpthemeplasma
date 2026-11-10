@@ -57,6 +57,7 @@ YONETILEN = {
     "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},
     "Kvantum/kvantum.kvconfig": {"General": {"theme": "XPLuna"}},
     "konsolerc": {"Desktop Entry": {"DefaultProfile": "XP Komut İstemi.profile"}},
+    "mimeapps.list": {"Default Applications": {"text/plain": "xp-notdefteri.desktop"}},
 }
 
 

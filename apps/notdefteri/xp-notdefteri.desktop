@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Not Defteri
+GenericName=Metin Düzenleyici
+Comment=Basit metin belgeleri oluşturun ve düzenleyin
+Exec=xp-notdefteri %f
+Icon=accessories-text-editor
+Terminal=false
+Categories=Utility;TextEditor;
+MimeType=text/plain;
+StartupWMClass=xp-notdefteri

@@ -5,6 +5,8 @@ export PLASMA_DEFAULT_SHELL=io.github.yyozcan.xpshell
 export XPTHEMEPLASMA_SESSION=1
 # XP varsayılanları (simge teması, oturum kapatma onayı, "Bu sistem hakkında" adı)
 export XDG_CONFIG_DIRS="$HOME/.local/share/xpthemeplasma/xdg:${XDG_CONFIG_DIRS:-/etc/xdg}"
+# yalnızca XP oturumunda görünen programlar (Not Defteri vb.)
+export XDG_DATA_DIRS="$HOME/.local/share/xpthemeplasma/data:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
 # XP yazı tipi işleme (küçük Tahoma kenar yumuşatmasız) — yalnızca bu oturumda
 [ -f "$HOME/.local/share/xpthemeplasma/fonts.conf" ] && export FONTCONFIG_FILE="$HOME/.local/share/xpthemeplasma/fonts.conf"
 /usr/lib/plasma-dbus-run-session-if-needed /usr/bin/startplasma-wayland
