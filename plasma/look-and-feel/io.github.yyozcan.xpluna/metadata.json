@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Category": "",
+        "Description": "Windows XP Luna (Blue) look for Plasma",
+        "Description[tr]": "Plasma için Windows XP Luna (Mavi) görünümü",
+        "Icon": "preferences-desktop-theme-global",
+        "Id": "io.github.yyozcan.xpluna",
+        "License": "GPL-3.0-or-later",
+        "Name": "XP Luna",
+        "Name[tr]": "XP Luna",
+        "Version": "1.0",
+        "Website": "https://github.com/YYOzcan/xpthemeplasma"
+    },
+    "X-Plasma-APIVersion": "2",
+    "X-KDE-ParentApp": "org.kde.plasmashell"
+}

@@ -1,0 +1,28 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "Marco Martin",
+                "Email": "mart@kde.org"
+            },
+            {
+                "Name": "wackyideas (AeroThemePlasma)"
+            },
+            {
+                "Name": "XPThemePlasma"
+            }
+        ],
+        "Category": "",
+        "Id": "io.github.yyozcan.xppanel",
+        "License": "GPL-2.0+",
+        "Name": "XP Panel",
+        "Website": "https://github.com/YYOzcan/xpthemeplasma",
+        "Name[tr]": "XP Paneli",
+        "Description": "Windows XP biçemli görev çubuğu kapsayıcısı (ATP paneli çatalı)"
+    },
+    "Keywords": "",
+    "NoDisplay": true,
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-ContainmentType": "Panel"
+}

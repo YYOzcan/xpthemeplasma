@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+      http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
+  <kcfgfile name=""/>
+
+  <group name="General">
+    <entry name="icon" type="String">
+      <label>Start button icon</label>
+      <default>start-here-kde-symbolic</default>
+    </entry>
+    <entry name="favoriteApps" type="StringList">
+      <label>Pinned applications (shared with other launchers through KActivities)</label>
+      <default></default>
+    </entry>
+    <entry name="favoritesPortedToKAstats" type="Bool">
+      <default>false</default>
+    </entry>
+    <entry name="recentCount" type="Int">
+      <label>How many frequently used programs to show</label>
+      <default>6</default>
+    </entry>
+    <entry name="showUserPicture" type="Bool">
+      <default>true</default>
+    </entry>
+  </group>
+</kcfg>

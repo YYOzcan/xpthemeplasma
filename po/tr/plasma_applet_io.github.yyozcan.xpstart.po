@@ -1,0 +1,72 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: tr\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgctxt "Start button label (lowercase, like Windows XP)"
+msgid "start"
+msgstr "başlat"
+
+msgid "Click here to begin"
+msgstr "Başlamak için burayı tıklatın"
+
+msgid "Edit Applications…"
+msgstr "Uygulamaları Düzenle…"
+
+msgid "(Empty)"
+msgstr "(Boş)"
+
+msgid "All Programs"
+msgstr "Tüm Programlar"
+
+msgid "My Documents"
+msgstr "Belgelerim"
+
+msgid "My Recent Documents"
+msgstr "Son Kullanılan Belgelerim"
+
+msgid "My Pictures"
+msgstr "Resimlerim"
+
+msgid "My Music"
+msgstr "Müziğim"
+
+msgid "My Computer"
+msgstr "Bilgisayarım"
+
+msgid "My Network Places"
+msgstr "Ağ Bağlantılarım"
+
+msgid "Control Panel"
+msgstr "Denetim Masası"
+
+msgid "Printers and Faxes"
+msgstr "Yazıcılar ve Fakslar"
+
+msgid "Help and Support"
+msgstr "Yardım ve Destek"
+
+msgid "Search"
+msgstr "Ara"
+
+msgid "Run…"
+msgstr "Çalıştır..."
+
+msgid "Log Off"
+msgstr "Oturumu Kapat"
+
+msgid "Turn Off Computer"
+msgstr "Bilgisayarı Kapat"
+
+msgid "Unpin from Start Menu"
+msgstr "Başlat Menüsünden Kaldır"
+
+msgid "Pin to Start Menu"
+msgstr "Başlat Menüsüne İliştir"
+
+msgid "On All Activities"
+msgstr "Tüm Etkinliklerde"
+
+msgid "On the Current Activity"
+msgstr "Geçerli Etkinlikte"

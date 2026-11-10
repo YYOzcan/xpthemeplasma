@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "Plasma/LayoutTemplate",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Id": "io.github.yyozcan.xptaskbar",
+        "License": "GPL-2.0+",
+        "Name": "XP Taskbar",
+        "Name[tr]": "XP Görev Çubuğu",
+        "Description": "Windows XP style taskbar",
+        "Description[tr]": "Windows XP biçemli görev çubuğu"
+    },
+    "X-Plasma-ContainmentCategories": ["panel"],
+    "X-Plasma-Shell": "io.github.yyozcan.xpshell"
+}

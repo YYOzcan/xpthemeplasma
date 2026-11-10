@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""xp-profil — XPThemePlasma oturumu için tema ayarlarını değiştir/geri al.
+
+  xp-profil xp      XP oturumu başlarken: mevcut (ör. ATP) tema anahtarlarını
+                    ~/.local/state/xpthemeplasma/onceki.json'a kaydeder, XP'yi uygular.
+  xp-profil geri    XP oturumu biterken: XP ayarlarını xp.json'a kaydeder,
+                    önceki temayı geri yükler.
+  xp-profil durum   Neyin kayıtlı olduğunu gösterir.
+
+Sadece aşağıdaki YONETILEN listesindeki anahtarlara dokunulur. Dosyalar satır
+satır düzenlenir; KDE'nin diğer ayarları olduğu gibi kalır.
+"""
+import json
+import os
+import sys
+from pathlib import Path
+
+HOME = Path.home()
+CFG = Path(os.environ.get("XDG_CONFIG_HOME", HOME / ".config"))
+DATA = Path(os.environ.get("XDG_DATA_HOME", HOME / ".local/share"))
+STATE = Path(os.environ.get("XDG_STATE_HOME", HOME / ".local/state")) / "xpthemeplasma"
+
+XP_FONT = "Tahoma,8,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+XP_FONT_SMALL = "Tahoma,7,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"
+XP_TITLE_FONT = "Trebuchet MS,10,-1,5,700,0,0,0,0,0,0,0,0,0,0,1"
+
+# dosya -> grup -> {anahtar: XP değeri}
+YONETILEN = {
+    "kdeglobals": {
+        "General": {"ColorScheme": "XPLuna", "font": XP_FONT, "menuFont": XP_FONT,
+                    "toolBarFont": XP_FONT, "smallestReadableFont": XP_FONT_SMALL},
+        "KDE": {"widgetStyle": "kvantum", "LookAndFeelPackage": "io.github.yyozcan.xpluna"},
+        "WM": {"activeFont": XP_TITLE_FONT},
+    },
+    "kwinrc": {
+        "org.kde.kdecoration2": {"library": "org.kde.kwin.aurorae",
+                                 "theme": "__aurorae__svg__XP-Luna",
+                                 "ButtonsOnLeft": "M", "ButtonsOnRight": "HIAX",
+                                 "BorderSize": "Normal", "BorderSizeAuto": "false"},
+        "Plugins": {"aeroglassblurEnabled": "false", "aeroglideEnabled": "false",
+                    "dimscreenaeroEnabled": "false", "smodglowEnabled": "false",
+                    "smodpeekeffectEnabled": "false",
+                    "libkwin_effect_smodsnapEnabled": "false",
+                    "blurEnabled": "false", "contrastEnabled": "false"},
+    },
+    "plasmarc": {"Theme": {"name": "XP-Luna"}},
+    "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},
+    "Kvantum/kvantum.kvconfig": {"General": {"theme": "XPLuna"}},
+}
+
+# renk şemasının gruplarını bütünüyle kdeglobals'a kopyala
+SCHEME = "XPLuna.colors"
+
+
+# ------------------------------------------------------------ KConfig metni ---
+class KConfig:
+    """KConfig INI dosyasını satır sırasını koruyarak düzenler."""
+
+    def __init__(self, path: Path):
+        self.path = path
+        self.groups = []          # [(ad, [satırlar])]; ad None = başlıksız baş kısım
+        cur = (None, [])
+        self.groups.append(cur)
+        if path.exists():
+            for line in path.read_text(errors="replace").splitlines():
+                s = line.strip()
+                if s.startswith("[") and s.endswith("]") and "=" not in s:
+                    cur = (s[1:-1], [])
+                    self.groups.append(cur)
+                else:
+                    cur[1].append(line)
+
+    def _find(self, group):
+        for g in self.groups:
+            if g[0] == group:
+                return g
+        return None
+
+    @staticmethod
+    def _key(line):
+        if "=" not in line or line.lstrip().startswith("#"):
+            return None
+        return line.split("=", 1)[0].strip()
+
+    def get_group(self, group):
+        g = self._find(group)
+        if not g:
+            return None
+        out = {}
+        for line in g[1]:
+            k = self._key(line)
+            if k is not None:
+                out[k] = line.split("=", 1)[1]
+        return out
+
+    def get(self, group, key):
+        grp = self.get_group(group)
+        return None if grp is None else grp.get(key)
+
+    def set(self, group, key, value):
+        g = self._find(group)
+        if g is None:
+            g = (group, [])
+            # boş satırla ayır
+            if self.groups[-1][1] and self.groups[-1][1][-1].strip():
+                self.groups[-1][1].append("")
+            self.groups.append(g)
+        for i, line in enumerate(g[1]):
+            if self._key(line) == key:
+                if value is None:
+                    del g[1][i]
+                else:
+                    g[1][i] = f"{key}={value}"
+                return
+        if value is not None:
+            # boş satırların önüne ekle
+            idx = len(g[1])
+            while idx > 0 and not g[1][idx - 1].strip():
+                idx -= 1
+            g[1].insert(idx, f"{key}={value}")
+
+    def replace_group(self, group, values):
+        """values None -> grubu sil; dict -> grubu tam olarak bu anahtarlarla değiştir."""
+        g = self._find(group)
+        if values is None:
+            if g:
+                self.groups.remove(g)
+            return
+        if g is None:
+            self.set(group, "__tmp__", "x")
+            g = self._find(group)
+        g[1][:] = [f"{k}={v}" for k, v in values.items()] + [""]
+
+    def save(self):
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        lines = []
+        for name, body in self.groups:
+            if name is not None:
+                if not any(self._key(l) is not None for l in body):
+                    continue          # anahtarı kalmamış grubu yazma
+                if lines and lines[-1].strip():
+                    lines.append("")
+                lines.append(f"[{name}]")
+            lines.extend(body)
+        text = "\n".join(lines).strip("\n")
+        if not text.strip():
+            if self.path.exists():
+                self.path.unlink()
+            return
+        self.path.write_text(text + "\n")
+
+
+def scheme_groups():
+    for base in [DATA / "color-schemes", Path("/usr/share/color-schemes")]:
+        p = base / SCHEME
+        if p.exists():
+            kc = KConfig(p)
+            return {name: kc.get_group(name) for name, _ in kc.groups
+                    if name and (name.startswith("Colors:") or name.startswith("ColorEffects:") or name == "WM")}
+    return {}
+
+
+def managed():
+    """{dosya: {"keys": {grup: {anahtar: xp}}, "groups": {grup: {..}}}}"""
+    out = {f: {"keys": {g: dict(k) for g, k in groups.items()}, "groups": {}} for f, groups in YONETILEN.items()}
+    sg = scheme_groups()
+    out["kdeglobals"]["groups"] = sg
+    # WM yazı tipi anahtarı renk grubu kopyalanırken kaybolmasın
+    if "WM" in sg:
+        sg["WM"] = dict(sg["WM"], activeFont=XP_TITLE_FONT)
+        out["kdeglobals"]["keys"].pop("WM", None)
+    return out
+
+
+def snapshot(spec):
+    snap = {}
+    for f, s in spec.items():
+        kc = KConfig(CFG / f)
+        snap[f] = {"keys": {g: {k: kc.get(g, k) for k in keys} for g, keys in s["keys"].items()},
+                   "groups": {g: kc.get_group(g) for g in s["groups"]}}
+    return snap
+
+
+def apply(snap):
+    for f, s in snap.items():
+        kc = KConfig(CFG / f)
+        for g, values in s.get("groups", {}).items():
+            kc.replace_group(g, values)
+        for g, keys in s.get("keys", {}).items():
+            for k, v in keys.items():
+                kc.set(g, k, v)
+        kc.save()
+
+
+def xp_defaults(spec):
+    return {f: {"keys": s["keys"], "groups": s["groups"]} for f, s in spec.items()}
+
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "durum"
+    STATE.mkdir(parents=True, exist_ok=True)
+    onceki, xp = STATE / "onceki.json", STATE / "xp.json"
+    spec = managed()
+    if cmd == "xp":
+        if not onceki.exists():          # çökme sonrası ikinci kez çağrılırsa ATP kaydı ezilmesin
+            onceki.write_text(json.dumps(snapshot(spec), indent=1, ensure_ascii=False))
+        target = json.loads(xp.read_text()) if xp.exists() and "--varsayilan" not in sys.argv else xp_defaults(spec)
+        apply(target)
+        print("XP teması uygulandı.")
+    elif cmd == "geri":
+        if not onceki.exists():
+            print("Kayıtlı önceki tema yok; bir şey yapılmadı.")
+            return
+        xp.write_text(json.dumps(snapshot(spec), indent=1, ensure_ascii=False))
+        apply(json.loads(onceki.read_text()))
+        onceki.unlink()
+        print("Önceki tema geri yüklendi.")
+    elif cmd == "durum":
+        print("önceki tema kaydı:", "VAR" if onceki.exists() else "yok", f"({onceki})")
+        print("XP ayar kaydı   :", "VAR" if xp.exists() else "yok", f"({xp})")
+    else:
+        print(__doc__)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

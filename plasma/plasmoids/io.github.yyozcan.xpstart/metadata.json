@@ -1,0 +1,31 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "XPThemePlasma"
+            },
+            {
+                "Name": "wackyideas (AeroThemePlasma — SevenStart)"
+            },
+            {
+                "Email": "hein@kde.org",
+                "Name": "Eike Hein (Kicker)"
+            }
+        ],
+        "Category": "Application Launchers",
+        "Description": "Windows XP style Start menu",
+        "Description[tr]": "Windows XP biçemli Başlat menüsü",
+        "Icon": "start-here-kde",
+        "Id": "io.github.yyozcan.xpstart",
+        "License": "GPL-2.0+",
+        "Name": "XP Start",
+        "Name[tr]": "XP Başlat",
+        "Version": "1.0",
+        "Website": "https://github.com/YYOzcan/xpthemeplasma"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-Provides": [
+        "org.kde.plasma.launchermenu"
+    ]
+}

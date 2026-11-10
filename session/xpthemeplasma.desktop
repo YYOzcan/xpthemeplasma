@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=/usr/local/bin/startxp-wayland
+TryExec=/usr/local/bin/startxp-wayland
+DesktopNames=KDE
+Name=XPThemePlasma (Wayland)
+Name[tr]=XPThemePlasma (Wayland)
+Comment=Windows XP Luna görünümlü Plasma oturumu
+Comment[tr]=Windows XP Luna görünümlü Plasma oturumu
+X-KDE-PluginInfo-Version=6.8
