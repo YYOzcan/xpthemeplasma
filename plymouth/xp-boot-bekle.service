@@ -1,0 +1,12 @@
+[Unit]
+Description=XPThemePlasma: XP açılış ekranı en az 10 saniye görünsün
+DefaultDependencies=no
+After=plymouth-start.service
+Before=display-manager.service plymouth-quit.service plymouth-quit-wait.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/xpthemeplasma/xp-boot-bekle 10
+
+[Install]
+WantedBy=graphical.target

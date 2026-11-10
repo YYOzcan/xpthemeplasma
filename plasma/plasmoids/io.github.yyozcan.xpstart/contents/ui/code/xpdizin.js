@@ -28,6 +28,7 @@ var ESLEME = [
     ["org.kde.kcalc.desktop", "Hesap Makinesi", "don"],
     ["org.kde.kolourpaint.desktop", "Paint", "don"],
     ["org.kde.konsole.desktop", "Komut İstemi", "don"],
+    ["xp-gezgin.desktop", "Windows Gezgini", "don"],
     ["org.kde.dolphin.desktop", "Windows Gezgini", "don"],
     ["org.kde.kdenlive.desktop", "Windows Movie Maker", "don"],
     ["libreoffice-writer.desktop", "WordPad", "don"],

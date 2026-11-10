@@ -6,6 +6,8 @@
 Eksik adlar index.theme'deki Inherits zinciriyle (Windows 7 Aero → breeze) tamamlanır.
 """
 import sys
+
+from PIL import Image
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -154,7 +156,8 @@ MAP = [
     ("user32.dll", 101, "status", "dialog-warning data-warning"),
     ("user32.dll", 104, "status", "dialog-information data-information"),
     ("user32.dll", 102, "status", "dialog-question"),
-    ("sndvol32.exe", 300, "status", "audio-volume-high audio-volume-medium audio-volume-low audio-ready audio-volume-high-danger"),
+    ("sndvol32.exe", 304, "status", "audio-volume-high audio-volume-medium audio-volume-low audio-ready audio-volume-high-danger"),
+    ("sndvol32.exe", 300, "apps", "multimedia-volume-control kmix org.kde.kmix"),
     ("sndvol32.exe", 303, "status", "audio-volume-muted audio-volume-low-zero audio-off"),
     ("netshell.dll", 190, "status", "network-wired network-wired-activated network-connect network-wired-connected network-transmit-receive network-transmit network-receive network-idle"),
     ("netshell.dll", 195, "status", "network-wired-disconnected network-disconnect network-offline network-wired-unavailable network-error"),
@@ -173,6 +176,72 @@ MAP = [
     ("wuaucpl.cpl", 3, "status", "security-medium"),
     (S, 1001, "status", "notifications preferences-desktop-notification-bell notification-active"),
 ]
+
+
+# Araç çubuğu şeritleri: (dosya, 24px bitmap, 16px bitmap) -> {indeks: adlar}
+SERITLER = [
+    ("shell32.dll", 214, 216, {
+        0: "go-previous go-back draw-arrow-back", 1: "go-next go-forward draw-arrow-forward",
+        2: "bookmarks-organize", 3: "bookmark-new",
+        5: "edit-cut", 6: "edit-copy", 7: "edit-paste", 8: "edit-undo", 9: "edit-redo",
+        10: "edit-delete delete", 11: "document-new", 12: "document-open", 13: "document-save document-save-as",
+        14: "document-print-preview", 15: "document-properties", 16: "help-whatsthis",
+        17: "edit-find system-search search", 19: "document-print",
+        20: "view-list-icons view-preview", 21: "view-list-compact", 22: "view-list-tree",
+        23: "view-list-details view-list-text", 24: "view-sort-ascending view-sort",
+        28: "go-up go-parent-folder", 31: "folder-new", 32: "view-choose", 43: "view-sidetree sidebar-show",
+        44: "edit-move", 45: "edit-copy-path"}),
+    ("shell32.dll", 204, 206, {
+        2: "process-stop", 3: "view-refresh reload", 4: "go-home",
+        12: "view-history", 13: "mail-message-new mail-send"}),
+]
+
+
+def seritler(xp, out, dirs):
+    from msstyles import decode_dib
+    from peres import PEResources
+    n = 0
+    cache = {}
+    for fname, b24, b16, harita in SERITLER:
+        if fname not in cache:
+            cache[fname] = PEResources((xp / "ikon" / fname).read_bytes())
+        r = cache[fname]
+        for bid, size in [(b24, 24), (b16, 16)]:
+            d = r.get("BITMAP", bid)
+            if d is None:
+                continue
+            strip, _ = decode_dib(d)
+            for i, names in harita.items():
+                tile = strip.crop((i * size, 0, (i + 1) * size, size))
+                hedefler = [size] if size == 24 else [16, 22]
+                for hs in hedefler:
+                    img = tile if hs == size else tile.resize((hs, hs), 1)
+                    dd = out / f"{hs}x{hs}" / "actions"
+                    dd.mkdir(parents=True, exist_ok=True)
+                    dirs.add((hs, "actions"))
+                    for name in names.split():
+                        img.save(dd / f"{name}.png")
+                        img.save(dd / f"{name}-symbolic.png")
+                        n += 1
+    return n
+
+
+def tepsi_oku(xp, out, dirs):
+    """Sistem tepsisi genişletme oku: XP'nin yuvarlak '‹' / '›' düğmeleri (yalnızca -symbolic adlar)."""
+    from msstyles import Msstyles
+    ms = Msstyles(str(xp / "stil/luna.msstyles"))
+    n = 0
+    for cls, ad in [("TrayNotifyHoriz::Button", "arrow-up-symbolic"), ("TrayNotifyHorizOpen::Button", "arrow-down-symbolic")]:
+        img = ms.images(cls)[0]
+        for size in BOYUTLAR:
+            kare = Image.new("RGBA", (max(img.size), max(img.size)))
+            kare.paste(img, ((kare.width - img.width) // 2, (kare.height - img.height) // 2))
+            d = out / f"{size}x{size}" / "actions"
+            d.mkdir(parents=True, exist_ok=True)
+            dirs.add((size, "actions"))
+            kare.resize((size, size), Image.LANCZOS).save(d / f"{ad}.png")
+            n += 1
+    return n
 
 
 def main(xp, out):
@@ -200,6 +269,8 @@ def main(xp, out):
                 yazilan += 1
                 if context in SEMBOLIK and not name.endswith("-symbolic"):
                     img.save(d / f"{name}-symbolic.png")
+    yazilan += seritler(xp, out, dirs)
+    yazilan += tepsi_oku(xp, out, dirs)
     dlist = sorted(f"{s}x{s}/{c}" for s, c in dirs)
     ctx = {"apps": "Applications", "places": "Places", "devices": "Devices", "mimetypes": "MimeTypes",
            "actions": "Actions", "status": "Status", "categories": "Categories", "emblems": "Emblems"}

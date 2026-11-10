@@ -19,6 +19,31 @@ if [[ "${1:-}" == "--sddm-xp" ]]; then
     exit 0
 fi
 
+if [[ "${1:-}" == "--plymouth" || "${1:-}" == "--plymouth-geri" ]]; then
+    [[ $EUID -eq 0 ]] || { echo "sudo bash $0 ${1}" >&2; exit 1; }
+    if [[ "$1" == "--plymouth-geri" ]]; then
+        onceki=$(cat /usr/share/plymouth/themes/xpthemeplasma/.onceki 2>/dev/null || echo bgrt)
+        systemctl disable xp-boot-bekle.service 2>/dev/null || true
+        rm -f /etc/systemd/system/xp-boot-bekle.service
+        plymouth-set-default-theme -R "$onceki"
+        echo "Plymouth teması geri alındı: $onceki"
+        exit 0
+    fi
+    [[ -f build/plymouth/xpthemeplasma/boot.png ]] || { echo "Önce kullanıcı olarak: bash $0 --xp <ISO>" >&2; exit 1; }
+    onceki=$(plymouth-set-default-theme 2>/dev/null || true)
+    rm -rf /usr/share/plymouth/themes/xpthemeplasma
+    cp -r build/plymouth/xpthemeplasma /usr/share/plymouth/themes/xpthemeplasma
+    [[ "$onceki" != "xpthemeplasma" && -n "$onceki" ]] && echo "$onceki" > /usr/share/plymouth/themes/xpthemeplasma/.onceki
+    install -Dm755 plymouth/xp-boot-bekle /usr/local/lib/xpthemeplasma/xp-boot-bekle
+    install -Dm644 plymouth/xp-boot-bekle.service /etc/systemd/system/xp-boot-bekle.service
+    systemctl daemon-reload
+    systemctl enable xp-boot-bekle.service
+    echo "==> initramfs yeniden oluşturuluyor (birkaç dakika sürebilir)"
+    plymouth-set-default-theme -R xpthemeplasma
+    echo "Plymouth: XP açılış ekranı (en az 10 sn). Geri almak: sudo bash $0 --plymouth-geri"
+    exit 0
+fi
+
 if [[ "${1:-}" == "--sistem" ]]; then
     if [[ $EUID -ne 0 ]]; then
         echo "Bu kısım root ister:  sudo bash $0 --sistem" >&2
@@ -59,7 +84,7 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
            "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
-           "$DATA/kwin/tabbox/xp_alttab" "$BIN/xp-notdefteri"
+           "$DATA/kwin/tabbox/xp_alttab" "$BIN/xp-notdefteri" "$BIN/xp-gezgin" "$BIN/xp-denetim"
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -82,6 +107,7 @@ if [[ -f "$XPD/stil/luna.msstyles" ]]; then
     $PY tools/gen_luna_kvantum.py "$XPD/stil/luna.msstyles" build/kvantum
     $PY tools/gen_luna_plasma.py "$XPD" build/desktoptheme build/varlik
     rm -rf build/wallpapers-xp && $PY tools/gen_luna_duvar.py "$XPD" build/wallpapers-xp
+    $PY tools/gen_luna_plymouth.py build/varlik build/plymouth/xpthemeplasma
     rm -rf build/icons build/sounds
     $PY tools/gen_luna_ikon.py "$XPD" "build/icons/Windows XP"
     $PY tools/gen_luna_imlec.py "$XPD" "build/icons/Windows XP"
@@ -143,12 +169,16 @@ echo "==> XP programları (yalnızca XP oturumunda görünür)"
 XPAPP="$DATA/xpthemeplasma/data/applications"
 mkdir -p "$XPAPP" build/bin
 if command -v g++ >/dev/null && pkg-config --exists Qt6Widgets Qt6PrintSupport; then
-    g++ -std=c++17 -O2 -fPIC apps/notdefteri/notdefteri.cpp -o build/bin/xp-notdefteri \
-        $(pkg-config --cflags --libs Qt6Widgets Qt6PrintSupport) \
-        && install -Dm755 build/bin/xp-notdefteri "$BIN/xp-notdefteri" \
-        && install -Dm644 apps/notdefteri/xp-notdefteri.desktop "$XPAPP/xp-notdefteri.desktop"
+    for app in notdefteri:xp-notdefteri:"Qt6Widgets Qt6PrintSupport" gezgin:xp-gezgin:Qt6Widgets denetim:xp-denetim:Qt6Widgets; do
+        IFS=: read -r dizin ikili moduller <<< "$app"
+        moduller=${moduller//\"/}
+        echo "    derleniyor: $ikili"
+        g++ -std=c++17 -O2 -fPIC "apps/$dizin/$dizin.cpp" -o "build/bin/$ikili" $(pkg-config --cflags --libs $moduller) \
+            && install -Dm755 "build/bin/$ikili" "$BIN/$ikili" \
+            && install -Dm644 "apps/$dizin/$ikili.desktop" "$XPAPP/$ikili.desktop"
+    done
 else
-    echo "    (g++/Qt6 geliştirme dosyaları yok: Not Defteri derlenmedi)"
+    echo "    (g++/Qt6 geliştirme dosyaları yok: XP programları derlenmedi)"
 fi
 
 echo "==> Komut İstemi (XP) ve yazı tipi işleme"

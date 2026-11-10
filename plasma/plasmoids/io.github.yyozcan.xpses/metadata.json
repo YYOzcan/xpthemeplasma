@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Category": "Multimedia",
+        "Description": "Windows XP style volume control",
+        "Description[tr]": "Windows XP biçemli ses düzeyi denetimi",
+        "Icon": "audio-volume-high",
+        "Id": "io.github.yyozcan.xpses",
+        "License": "GPL-2.0-or-later",
+        "Name": "XP Volume",
+        "Name[tr]": "XP Ses Düzeyi",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-NotificationArea": "true",
+    "X-Plasma-NotificationAreaCategory": "Hardware"
+}

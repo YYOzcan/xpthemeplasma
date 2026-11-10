@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Denetim Masası
+Comment=Bilgisayarınızın görünümünü ve işlevlerini özelleştirin
+Exec=xp-denetim
+Icon=preferences-system
+Terminal=false
+NoDisplay=true
+Categories=Settings;
+StartupWMClass=xp-denetim

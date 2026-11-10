@@ -46,6 +46,12 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 | **Hoş geldiniz** (SDDM) | XP karşılama ekranı: kullanıcı kutucukları, yeşil ok, Bilgisayarı kapat, oturum seçici | `sddm/xpthemeplasma` |
 | **Tepe** duvar kağıdı | Bliss'ten esinlenmiş, prosedürel yeşil tepe + mavi gök | `tools/gen_wallpaper.py` |
 | **XPLuna** renk şeması | `#ECE9D8` yüzey, `#316AC5` seçim | `plasma/color_scheme` |
+| **Windows Gezgini** | XP Gezgini: Döşemeler/Simgeler/Liste/Ayrıntılar, görev bölmesi (Dosya ve Klasör Görevleri, Diğer Yerler, Ayrıntılar), Klasörler ağacı, Bilgisayarım; XP oturumunda klasörlerin varsayılanı | `apps/gezgin` |
+| **Denetim Masası** | XP Kategori ve Klasik Görünüm; her simge ilgili KDE ayar modülünü kendi penceresinde açar | `apps/denetim` |
+| **Ses Düzeyi** | Tepsideki XP ses penceresi: "Ses Düzeyi", XP kaydırıcısı, "Sessiz"; tekerlekle ses, orta tıkla sessiz | `plasma/plasmoids/io.github.yyozcan.xpses` |
+| **Bildirim balonları** | Bildirimler XP'nin sarı tepsi balonları olarak (kuyruk, XP kapatma düğmesi, balon sesi) | `plasma/plasmoids/io.github.yyozcan.xpbalon` |
+| **Hoş Geldiniz** | Oturum açılınca masaüstü yüklenirken XP'nin "Hoş Geldiniz" ekranı | `look-and-feel/.../splash` |
+| **Plymouth** | Bilgisayar açılırken XP açılış ekranı ve kayan mavi bloklar; en az 10 sn görünür (`sudo bash kur.sh --plymouth`, geri: `--plymouth-geri`) | `plymouth/` |
 | **Tüm Programlar** | XP düzeni: Donatılar (Erişilebilirlik, Eğlence, İletişim, Sistem Araçları), Başlangıç, Oyunlar; uygulamalar XP adlarıyla (Not Defteri, Paint, Hesap Makinesi, Internet Explorer, Windows Media Player…) | `xpstart/.../code/xpdizin.js` |
 | **Not Defteri** | XP Not Defteri'nin menüleri ve iletileriyle Qt metin düzenleyici (yalnızca XP oturumunda görünür, `.txt` varsayılanı) | `apps/notdefteri` |
 | **XP Alt+Tab** | CoolSwitch: 3B yüzey, simge ızgarası, çökük başlık kutusu | `kwin/tabbox/xp_alttab` |

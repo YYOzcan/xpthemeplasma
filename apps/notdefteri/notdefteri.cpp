@@ -245,7 +245,6 @@ int main(int argc, char **argv) {
     QApplication app(argc, argv);
     QApplication::setOrganizationName("XPThemePlasma");
     QApplication::setApplicationName("xp-notdefteri");
-    QApplication::setApplicationDisplayName("Not Defteri");
     QGuiApplication::setDesktopFileName("xp-notdefteri");
     NotDefteri w;
     if (argc > 1) w.dosyaYukle(QString::fromLocal8Bit(argv[1]));

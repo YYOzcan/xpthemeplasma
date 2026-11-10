@@ -20,9 +20,9 @@ tasks.writeConfig("iconSpacing", "0");
 
 var tray = panel.addWidget("org.kde.plasma.systemtray");
 // Yalnızca stok KDE tepsi öğeleri (ATP'nin Win7 çatalları ikilenmesin)
-var trayItems = ["org.kde.plasma.volume", "org.kde.plasma.networkmanagement",
+var trayItems = ["io.github.yyozcan.xpses", "org.kde.plasma.networkmanagement",
                  "org.kde.plasma.bluetooth", "org.kde.plasma.battery",
-                 "org.kde.plasma.notifications", "org.kde.plasma.devicenotifier",
+                 "io.github.yyozcan.xpbalon", "org.kde.plasma.devicenotifier",
                  "org.kde.plasma.keyboardlayout", "org.kde.plasma.mediacontroller",
                  "org.kde.plasma.clipboard", "org.kde.plasma.printmanager",
                  "org.kde.kdeconnect", "org.kde.plasma.cameraindicator",
@@ -36,7 +36,9 @@ tray.writeConfig("knownItems", trayItems.concat([
     "io.gitgud.wackyideas.battery", "io.gitgud.wackyideas.networkmanagement",
     "io.gitgud.wackyideas.volume", "io.gitgud.wackyideas.notifications",
     "io.gitgud.wackyideas.keyboardlayout", "org.kde.plasma.weather",
-    "org.kde.plasma.dwellclicker", "org.kde.plasma.vault"]));
+    "org.kde.plasma.dwellclicker", "org.kde.plasma.vault",
+    // XP sürümleriyle değiştirilen stok öğeler
+    "org.kde.plasma.volume", "org.kde.plasma.notifications"]));
 tray.writeConfig("hiddenItems", ["org.kde.plasma.clipboard", "org.kde.kdeconnect",
     "org.kde.kscreen", "org.kde.plasma.manage-inputmethod", "org.kde.plasma.keyboardindicator",
     "org.kde.plasma.printmanager", "org.kde.plasma.brightness"]);

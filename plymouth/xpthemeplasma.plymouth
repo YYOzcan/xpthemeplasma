@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=XPThemePlasma
+Description=Windows XP açılış ekranı (kendi XP kopyandan)
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/xpthemeplasma
+ScriptFile=/usr/share/plymouth/themes/xpthemeplasma/xpthemeplasma.script

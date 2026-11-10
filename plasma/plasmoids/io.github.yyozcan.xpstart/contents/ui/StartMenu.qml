@@ -765,7 +765,7 @@ PlasmaCore.Dialog {
                             }
                             RightItem {
                                 text: i18n("My Computer"); iconName: "computer"; bold: true
-                                onActivated: menu.run({ "cmd": "dolphin --new-window /" })
+                                onActivated: menu.run({ "cmd": "xp-gezgin --bilgisayarim" })
                             }
                             RightItem {
                                 text: i18n("My Network Places"); iconName: "network-workgroup"
@@ -774,7 +774,7 @@ PlasmaCore.Dialog {
                             Separator { tint: "#A9C5EB"; places: true }
                             RightItem {
                                 text: i18n("Control Panel"); iconName: "preferences-system"
-                                onActivated: menu.run({ "cmd": "systemsettings" })
+                                onActivated: menu.run({ "cmd": "xp-denetim" })
                             }
                             RightItem {
                                 text: i18n("Printers and Faxes"); iconName: "printer"

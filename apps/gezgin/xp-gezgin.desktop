@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Windows Gezgini
+GenericName=Dosya Yöneticisi
+Comment=Bilgisayarınızdaki dosya ve klasörleri görüntüleyin
+Exec=xp-gezgin %u
+Icon=system-file-manager
+Terminal=false
+Categories=Utility;System;FileManager;
+MimeType=inode/directory;
+StartupWMClass=xp-gezgin

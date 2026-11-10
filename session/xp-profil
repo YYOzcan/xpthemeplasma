@@ -57,7 +57,11 @@ YONETILEN = {
     "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},
     "Kvantum/kvantum.kvconfig": {"General": {"theme": "XPLuna"}},
     "konsolerc": {"Desktop Entry": {"DefaultProfile": "XP Komut İstemi.profile"}},
-    "mimeapps.list": {"Default Applications": {"text/plain": "xp-notdefteri.desktop"}},
+    # XP: oturum açılışında "Windows XP Başlangıç", kapanışta "Windows XP Kapanış" sesi
+    "plasma_workspace.notifyrc": {"Event/startkde": {"Action": "Sound"},
+                                  "Event/exitkde": {"Action": "Sound"}},
+    "mimeapps.list": {"Default Applications": {"text/plain": "xp-notdefteri.desktop",
+                                               "inode/directory": "xp-gezgin.desktop"}},
 }
 
 
@@ -222,6 +226,29 @@ def xp_defaults(spec):
     return {f: {"keys": s["keys"], "groups": s["groups"]} for f, s in spec.items()}
 
 
+def birlestir(varsayilan, kayit, onceki=None):
+    """XP oturumunda kaydedilmiş değerleri varsayılanların üzerine yaz.
+    Kayıtta olmayan ya da boş (None) anahtarlar için XP varsayılanı kullanılır —
+    böylece sonradan eklenen yönetilen anahtarlar (simge teması vb.) da uygulanır."""
+    out = json.loads(json.dumps(varsayilan))
+    for f, s in kayit.items():
+        if f not in out:
+            continue
+        for g, keys in s.get("keys", {}).items():
+            hedef = out[f]["keys"].get(g)
+            if hedef is None:
+                continue
+            onc = ((onceki or {}).get(f, {}).get("keys", {}).get(g) or {})
+            for k, v in keys.items():
+                # ATP'deki değerle aynıysa XP'de bilerek seçilmemiştir: XP varsayılanı kalsın
+                if k in hedef and v is not None and v != onc.get(k):
+                    hedef[k] = v
+        for g, values in s.get("groups", {}).items():
+            if g in out[f]["groups"] and values:
+                out[f]["groups"][g] = values
+    return out
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "durum"
     STATE.mkdir(parents=True, exist_ok=True)
@@ -230,7 +257,9 @@ def main():
     if cmd == "xp":
         if not onceki.exists():          # çökme sonrası ikinci kez çağrılırsa ATP kaydı ezilmesin
             onceki.write_text(json.dumps(snapshot(spec), indent=1, ensure_ascii=False))
-        target = json.loads(xp.read_text()) if xp.exists() and "--varsayilan" not in sys.argv else xp_defaults(spec)
+        target = xp_defaults(spec)
+        if xp.exists() and "--varsayilan" not in sys.argv:
+            target = birlestir(target, json.loads(xp.read_text()), json.loads(onceki.read_text()))
         apply(target)
         print("XP teması uygulandı.")
     elif cmd == "geri":

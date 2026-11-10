@@ -63,6 +63,16 @@ def desktoptheme(ms, out):
         for side in ["south", "north", "west", "east"]:
             s.add_frame(f"{side}-{kind}", up(im), 4, 4, 4, 4)
     gd.write(d / "widgets/tasks.svg", s)
+
+    # ---- oklar: tepsi genişletici XP'nin yuvarlak "‹" düğmesi; diğerleri küçük siyah üçgen
+    chev = ms.images("TrayNotifyHoriz::Button")[0]
+    s = Sheet(scale=2, width=300)
+    s.add_image("up-arrow", up(chev), chev.size[0], chev.size[1])
+    tri = {"down-arrow": "M2,5 L14,5 L8,11 Z", "left-arrow": "M11,2 L11,14 L5,8 Z",
+           "right-arrow": "M5,2 L5,14 L11,8 Z"}
+    for eid, path in tri.items():
+        s.add_image(eid, gd.im(16, 16, f'<path d="{path}" fill="#000000"/>'), 16, 16)
+    gd.write(d / "widgets/arrows.svg", s)
     print("masaüstü teması (gerçek Luna) ->", d)
 
 
@@ -90,6 +100,37 @@ def varliklar(ms, xp, out):
          content=ms.ints("TrayNotifyHoriz::TrayNotify.Background", "ContentMargins"))
     for name, im in zip(["tray-chevron-normal", "tray-chevron-hot", "tray-chevron-pressed"],
                         ms.images("TrayNotifyHoriz::Button")):
+        save(name, im)
+
+    # Gezgin / Denetim Masası görev bölmesi (ExplorerBar)
+    for name, cls in [("eb-normal-head", "ExplorerBar.NormalGroupHead"), ("eb-normal-bg", "ExplorerBar.NormalGroupBackground"),
+                      ("eb-special-head", "ExplorerBar.SpecialGroupHead"), ("eb-special-bg", "ExplorerBar.SpecialGroupBackground")]:
+        save(name, ms.images(cls)[0], ms.margins(cls))
+    for kind in ["Normal", "Special"]:
+        for act in ["Collapse", "Expand"]:
+            for i, im in enumerate(ms.images(f"ExplorerBar.{kind}Group{act}")):
+                save(f"eb-{kind.lower()}-{act.lower()}-{i}", im)
+    eb = {}
+    for key, cls in [("pane", "ExplorerBar"), ("normalHead", "ExplorerBar.NormalGroupHead"),
+                     ("normalLink", "ExplorerBar.NormalGroupBackground"),
+                     ("specialHead", "ExplorerBar.SpecialGroupHead"),
+                     ("specialLink", "ExplorerBar.SpecialGroupBackground")]:
+        eb[key] = {k: ("#%02x%02x%02x" % c if c else None) for k, c in [
+            ("text", ms.color(cls, "TextColor")), ("g1", ms.color(cls, "GradientColor1")),
+            ("g2", ms.color(cls, "GradientColor2")), ("fill", ms.color(cls, "FillColor"))]}
+    meta["explorerbar"] = eb
+    # araç çubuğu şeritleri (Gezgin: shell32 214/215, IE: 204/205; 24 px)
+    sh = PEResources((Path(xp) / "ikon/shell32.dll").read_bytes())
+    for bid, name in [(214, "tb-gezgin"), (215, "tb-gezgin-hot"), (204, "tb-ie"), (205, "tb-ie-hot"),
+                      (216, "tb-gezgin-16")]:
+        d = sh.get("BITMAP", bid)
+        if d:
+            im, _ = decode_dib(d)
+            save(name, im)
+
+    # balon (bildirim) kapatma düğmesi: normal, üzerinde, basılı
+    for name, im in zip(["balloon-close-normal", "balloon-close-hot", "balloon-close-pressed"],
+                        ms.images("Tooltip.Close")):
         save(name, im)
 
     # Başlat paneli

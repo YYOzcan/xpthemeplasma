@@ -1,0 +1,6 @@
+#!/bin/sh
+# XPThemePlasma: açılıştan bu yana SURE saniye dolmadıysa kalanını bekle (XP yükleme barı görünsün)
+SURE=${1:-10}
+gecen=$(cut -d. -f1 /proc/uptime)
+[ "$gecen" -lt "$SURE" ] && sleep $((SURE - gecen))
+exit 0

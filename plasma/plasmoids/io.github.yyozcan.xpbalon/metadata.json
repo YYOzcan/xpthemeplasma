@@ -1,0 +1,19 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Category": "Tasks",
+        "Description": "Windows XP style notification balloons",
+        "Description[tr]": "Windows XP biçemli bildirim balonları",
+        "Icon": "preferences-desktop-notification-bell",
+        "Id": "io.github.yyozcan.xpbalon",
+        "License": "GPL-2.0-or-later",
+        "Name": "XP Notification Balloons",
+        "Name[tr]": "XP Bildirim Balonları",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-NotificationArea": "true",
+    "X-Plasma-NotificationAreaCategory": "SystemServices",
+    "X-Plasma-Provides": ["org.kde.plasma.notifications"]
+}
