@@ -4,6 +4,12 @@ KDE Plasma 6 için **Windows XP Luna (Mavi)** görünümü. [AeroThemePlasma](ht
 Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** çalışır: SDDM'de
 "XPThemePlasma (Wayland)" oturumunu seçersin, çıkınca ATP olduğu gibi geri gelir.
 
+![Masaüstü](screenshots/masaustu.png)
+
+| Başlat menüsü | Hoş geldiniz (SDDM) | Bilgisayarı Kapat |
+|---|---|---|
+| ![](screenshots/baslat-menusu.png) | ![](screenshots/karsilama.png) | ![](screenshots/kapat.png) |
+
 > Hiçbir Microsoft dosyası (msstyles, bitmap, Bliss fotoğrafı, ses, logo) kullanılmaz.
 > Bütün görseller `tools/` altındaki Python betikleriyle Luna paletine göre **sıfırdan çizilir**.
 
@@ -18,6 +24,8 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 | **XP Paneli** (kapsayıcı) | ATP panelinin çatalı: bildirim alanının arkasına XP'nin açık mavi tepsisini çizer, panel yazılarını beyaz yapar | `plasma/plasmoids/io.github.yyozcan.xppanel` |
 | **XP Kabuğu** + yerleşim | İlk açılışta: başlat · görevler · tepsi · saat (Tahoma 8) | `plasma/shells`, `plasma/layout-templates` |
 | **XP Luna** (Görünüm ve His) | XP açılış ekranı (siyah zemin, kayan üç mavi blok) | `plasma/look-and-feel` |
+| **Bilgisayarı Kapat** | XP'nin Bekleme / Kapat / Yeniden Başlat ve Kilitle / Oturumu Kapat pencereleri (otomatik geri sayım yok) | `plasma/shells/…/contents/logout` |
+| **Hoş geldiniz** (SDDM) | XP karşılama ekranı: kullanıcı kutucukları, yeşil ok, Bilgisayarı kapat, oturum seçici | `sddm/xpthemeplasma` |
 | **Tepe** duvar kağıdı | Bliss'ten esinlenmiş, prosedürel yeşil tepe + mavi gök | `tools/gen_wallpaper.py` |
 | **XPLuna** renk şeması | `#ECE9D8` yüzey, `#316AC5` seçim | `plasma/color_scheme` |
 | Türkçe | Başlat, Tüm Programlar, Belgelerim, Bilgisayarım, Denetim Masası… (XP'nin Türkçe terimleri) | `po/tr` |
@@ -26,7 +34,8 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 
 ```bash
 bash kur.sh                    # görselleri üretir, ~/.local ve ~/.config altına kurar (sudo gerekmez)
-sudo bash kur.sh --sistem      # SDDM oturum girdisi + /usr/local/bin/startxp-wayland
+sudo bash kur.sh --sistem      # SDDM oturum girdisi, /usr/local/bin/startxp-wayland, XP karşılama teması
+sudo bash kur.sh --sddm-xp     # (isteğe bağlı) SDDM'de XP karşılama ekranını etkinleştir
 ```
 
 Sonra oturumu kapat, SDDM'de **XPThemePlasma (Wayland)** seç.
@@ -45,6 +54,10 @@ KDE ayarları (`kdeglobals`, `kwinrc`, `plasmarc`…) iki oturumda ortaktır. Bu
 * XP'den çıkınca (ya da XP oturumu çökse bile bir sonraki ATP girişinde) `xp-profil geri`: XP ayarlarını
   `xp.json`'a saklar, önceki değerleri birebir geri yükler.
 * Panel düzeni ayrıdır: XP kabuğu kendi `plasma-io.github.yyozcan.xpshell-appletsrc` dosyasını kullanır.
+* XP oturumu ATP'nin `/etc/xdg/aerothemeplasma` katmanı yerine `~/.local/share/xpthemeplasma/xdg` katmanını kullanır
+  (simge teması korunur, oturum kapatma onayı açıktır, "Bu Sistem Hakkında" XPThemePlasma der).
+* Başlat menüsünün sabitlenenleri KDE'de tüm başlatıcılar arasında **ortaktır** (ATP'nin SevenStart'ı dahil);
+  XP Başlat bu ortak listeye kendiliğinden hiçbir şey yazmaz.
 
 Elle: `xp-profil durum`, `xp-profil geri`.
 

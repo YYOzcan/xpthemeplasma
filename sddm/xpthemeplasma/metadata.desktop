@@ -1,0 +1,16 @@
+[SddmGreeterTheme]
+Name=XPThemePlasma
+Name[tr]=XPThemePlasma
+Description=Windows XP style welcome screen
+Description[tr]=Windows XP biçemli karşılama ekranı
+Author=XPThemePlasma
+License=GPL-3.0-or-later
+Type=sddm-theme
+Version=1.0
+Website=https://github.com/YYOzcan/xpthemeplasma
+Screenshot=preview.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=xpthemeplasma
+Theme-API=2.0
+QtVersion=6

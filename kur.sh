@@ -10,6 +10,14 @@ set -euo pipefail
 KOK="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$KOK"
 
+if [[ "${1:-}" == "--sddm-xp" ]]; then
+    [[ $EUID -eq 0 ]] || { echo "sudo bash $0 --sddm-xp" >&2; exit 1; }
+    [[ -d /usr/share/sddm/themes/xpthemeplasma ]] || { echo "Önce: sudo bash $0 --sistem" >&2; exit 1; }
+    printf '[Theme]\nCurrent=xpthemeplasma\n' > /etc/sddm.conf.d/zz-xpthemeplasma.conf
+    echo "SDDM teması: xpthemeplasma"
+    exit 0
+fi
+
 if [[ "${1:-}" == "--sistem" ]]; then
     if [[ $EUID -ne 0 ]]; then
         echo "Bu kısım root ister:  sudo bash $0 --sistem" >&2
@@ -17,7 +25,12 @@ if [[ "${1:-}" == "--sistem" ]]; then
     fi
     install -Dm755 session/startxp-wayland /usr/local/bin/startxp-wayland
     install -Dm644 session/xpthemeplasma.desktop /usr/share/wayland-sessions/xpthemeplasma.desktop
+    rm -rf /usr/share/sddm/themes/xpthemeplasma
+    cp -r sddm/xpthemeplasma /usr/share/sddm/themes/xpthemeplasma
+    chmod -R a+rX /usr/share/sddm/themes/xpthemeplasma
     echo "Oturum kuruldu: SDDM'de 'XPThemePlasma (Wayland)' seçilebilir."
+    echo "XP karşılama ekranı kuruldu (etkin değil). Etkinleştirmek için:"
+    echo "  sudo bash $0 --sddm-xp      (geri almak: sudo rm /etc/sddm.conf.d/zz-xpthemeplasma.conf)"
     exit 0
 fi
 
@@ -37,9 +50,10 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$DATA/color-schemes/XPLuna.colors" "$DATA/wallpapers/XPThemePlasma" \
            "$DATA/locale/tr/LC_MESSAGES/plasma_applet_io.github.yyozcan.xpstart.mo" \
            "$DATA/locale/tr/LC_MESSAGES/xpthemeplasma.mo" \
-           "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil"
+           "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$DATA/xpthemeplasma"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
-    echo "  sudo rm /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop"
+    echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
+    echo "              /usr/share/sddm/themes/xpthemeplasma /etc/sddm.conf.d/zz-xpthemeplasma.conf"
     exit 0
 fi
 
@@ -74,6 +88,17 @@ for po in po/tr/*.po; do
     mkdir -p "$DATA/locale/tr/LC_MESSAGES"
     msgfmt -o "$DATA/locale/tr/LC_MESSAGES/$(basename "${po%.po}").mo" "$po"
 done
+
+echo "==> XP oturumu varsayılanları (XDG katmanı)"
+XDGK="$DATA/xpthemeplasma/xdg"
+mkdir -p "$XDGK"
+cp session/xdg/* "$XDGK/"
+SIMGE="breeze"
+for t in "Windows 7 Aero" "Windows XP" "Windows-XP"; do
+    if [[ -d "/usr/share/icons/$t" || -d "$DATA/icons/$t" ]]; then SIMGE="$t"; fi
+done
+printf '[Icons]\nTheme=%s\n' "$SIMGE" > "$XDGK/kdeglobals"
+echo "    simge teması: $SIMGE"
 
 echo "==> Oturum yardımcıları"
 install -Dm755 session/xp-profil "$BIN/xp-profil"

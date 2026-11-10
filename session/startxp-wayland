@@ -3,6 +3,8 @@
 # Tema anahtarlarının değiştirilmesi ~/.config/plasma-workspace/env/xpthemeplasma.sh içinde yapılır.
 export PLASMA_DEFAULT_SHELL=io.github.yyozcan.xpshell
 export XPTHEMEPLASMA_SESSION=1
+# XP varsayılanları (simge teması, oturum kapatma onayı, "Bu sistem hakkında" adı)
+export XDG_CONFIG_DIRS="$HOME/.local/share/xpthemeplasma/xdg:${XDG_CONFIG_DIRS:-/etc/xdg}"
 /usr/lib/plasma-dbus-run-session-if-needed /usr/bin/startplasma-wayland
 # düzgün oturum kapatmada önceki temayı hemen geri yükle
 [ -x "$HOME/.local/bin/xp-profil" ] && "$HOME/.local/bin/xp-profil" geri >/dev/null 2>&1
