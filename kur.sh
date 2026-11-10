@@ -36,6 +36,7 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$DATA/plasma/look-and-feel/io.github.yyozcan.xpluna" \
            "$DATA/color-schemes/XPLuna.colors" "$DATA/wallpapers/XPThemePlasma" \
            "$DATA/locale/tr/LC_MESSAGES/plasma_applet_io.github.yyozcan.xpstart.mo" \
+           "$DATA/locale/tr/LC_MESSAGES/xpthemeplasma.mo" \
            "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop"

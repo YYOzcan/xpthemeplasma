@@ -1,0 +1,26 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: tr\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Turn off computer"
+msgstr "Bilgisayarı Kapat"
+
+msgid "Log Off"
+msgstr "Oturumu Kapat"
+
+msgid "Lock"
+msgstr "Kilitle"
+
+msgid "Stand By"
+msgstr "Bekleme"
+
+msgid "Turn Off"
+msgstr "Kapat"
+
+msgid "Restart"
+msgstr "Yeniden Başlat"
+
+msgid "Cancel"
+msgstr "İptal"
