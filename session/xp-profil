@@ -41,12 +41,35 @@ YONETILEN = {
                     "dimscreenaeroEnabled": "false", "smodglowEnabled": "false",
                     "smodpeekeffectEnabled": "false",
                     "libkwin_effect_smodsnapEnabled": "false",
-                    "blurEnabled": "false", "contrastEnabled": "false"},
+                    "blurEnabled": "false", "contrastEnabled": "false",
+                    # XP animasyonları: pencere açılışında solma yok, menüler solar,
+                    # küçültme/büyütme canlandırılır
+                    "fadeEnabled": "false", "scaleEnabled": "false", "glideEnabled": "false",
+                    "squashEnabled": "true", "magiclampEnabled": "false",
+                    "maximizeEnabled": "true", "fadingpopupsEnabled": "true",
+                    "slidingpopupsEnabled": "false", "morphingpopupsEnabled": "false",
+                    "windowapertureEnabled": "false", "fadedesktopEnabled": "false",
+                    "slideEnabled": "false", "dimscreenEnabled": "false",
+                    "kwin4_effect_geometry_changeEnabled": "false"},
     },
     "plasmarc": {"Theme": {"name": "XP-Luna"}},
     "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},
     "Kvantum/kvantum.kvconfig": {"General": {"theme": "XPLuna"}},
+    "konsolerc": {"Desktop Entry": {"DefaultProfile": "XP Komut İstemi.profile"}},
 }
+
+
+def gercek_varliklar(spec):
+    """İçe aktarılmış XP simge/imleç/ses temaları kuruluysa onları da yönet."""
+    icons = DATA / "icons/Windows XP"
+    if (icons / "index.theme").exists():
+        spec["kdeglobals"]["keys"].setdefault("Icons", {})["Theme"] = "Windows XP"
+    if (icons / "cursors/default").exists():
+        spec.setdefault("kcminputrc", {"keys": {}, "groups": {}})
+        spec["kcminputrc"]["keys"]["Mouse"] = {"cursorTheme": "Windows XP", "cursorSize": "32"}
+    if (DATA / "sounds/Windows XP/index.theme").exists():
+        spec["kdeglobals"]["keys"].setdefault("Sounds", {}).update({"Theme": "Windows XP", "Enable": "true"})
+    return spec
 
 # renk şemasının gruplarını bütünüyle kdeglobals'a kopyala
 SCHEME = "XPLuna.colors"
@@ -165,6 +188,7 @@ def managed():
     out = {f: {"keys": {g: dict(k) for g, k in groups.items()}, "groups": {}} for f, groups in YONETILEN.items()}
     sg = scheme_groups()
     out["kdeglobals"]["groups"] = sg
+    gercek_varliklar(out)
     # WM yazı tipi anahtarı renk grubu kopyalanırken kaybolmasın
     if "WM" in sg:
         sg["WM"] = dict(sg["WM"], activeFont=XP_TITLE_FONT)

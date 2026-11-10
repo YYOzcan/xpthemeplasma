@@ -7,6 +7,7 @@
 
 import QtQuick
 import QtQuick.Layouts
+import QtCore
 import org.kde.plasma.plasmoid
 
 import org.kde.plasma.core as PlasmaCore
@@ -439,11 +440,22 @@ ContainmentItem {
             property Item tray: updateProps, appletsModel.count, findTray()
             visible: tray !== null && root.isHorizontal
             z: -1
-            x: tray ? currentLayout.x + tray.x - 6 : 0
+            // gerçek XP: TaskbarTray.bmp, içerik sol payı 19 px
+            readonly property bool gercek: trayImg.status === Image.Ready
+            readonly property int pad: gercek ? 14 : 6
+            x: tray ? currentLayout.x + tray.x - pad : 0
             y: 0
-            width: tray ? currentLayout.width - tray.x + 6 : 0
+            width: tray ? currentLayout.width - tray.x + pad : 0
             height: root.height
+            BorderImage {
+                id: trayImg
+                anchors.fill: parent
+                source: StandardPaths.writableLocation(StandardPaths.GenericDataLocation) + "/xpthemeplasma/varlik/tray.png"
+                border { left: 34; right: 10; top: 12; bottom: 12 }
+                smooth: false
+            }
             Rectangle {
+                visible: !trayBackground.gercek
                 anchors.fill: parent
                 gradient: Gradient {
                     GradientStop { position: 0.00; color: "#0C59B9" }
@@ -461,10 +473,10 @@ ContainmentItem {
                 }
             }
             // sol kenar: koyu çizgi + açık parıltı
-            Rectangle { x: 0; width: 1; height: parent.height; color: "#1042AF" }
-            Rectangle { x: 1; width: 1; height: parent.height; color: "#18BBFF"; opacity: 0.6 }
+            Rectangle { visible: !trayBackground.gercek; x: 0; width: 1; height: parent.height; color: "#1042AF" }
+            Rectangle { visible: !trayBackground.gercek; x: 1; width: 1; height: parent.height; color: "#18BBFF"; opacity: 0.6 }
             // üst kenar çizgisi
-            Rectangle { width: parent.width; height: 1; color: "#095BC9" }
+            Rectangle { visible: !trayBackground.gercek; width: parent.width; height: 1; color: "#095BC9" }
         }
         Connections {
             target: appletsModel

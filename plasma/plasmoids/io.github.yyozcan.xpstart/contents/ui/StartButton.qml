@@ -4,6 +4,7 @@
 */
 import QtQuick
 import QtQuick.Layouts
+import QtCore
 
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
@@ -15,8 +16,22 @@ MouseArea {
     readonly property bool down: pressed || startMenu.visible
     readonly property int h: height > 0 ? height : 30
 
-    implicitWidth: row.implicitWidth + 30
+    // Gerçek XP varlıkları (xp_iceaktar + gen_luna_plasma) varsa onları kullan
+    readonly property string varlik: StandardPaths.writableLocation(StandardPaths.GenericDataLocation) + "/xpthemeplasma/varlik/"
+    readonly property bool gercek: realBg.status === Image.Ready
+
+    implicitWidth: gercek ? 10 + 25 + 5 + label.implicitWidth + 24 : row.implicitWidth + 30
     implicitHeight: 30
+
+    BorderImage {
+        id: realBg
+        anchors.fill: parent
+        source: button.varlik + (button.down ? "start-pressed.png" : (button.containsMouse ? "start-hot.png" : "start-normal.png"))
+        border { left: 6; right: 52; top: 13; bottom: 14 }
+        horizontalTileMode: BorderImage.Stretch
+        verticalTileMode: BorderImage.Stretch
+        smooth: false
+    }
 
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton
@@ -28,6 +43,7 @@ MouseArea {
     // gövde: sağ köşesi yuvarlak yeşil degrade
     Rectangle {
         id: body
+        visible: !button.gercek
         anchors.fill: parent
         topRightRadius: Math.round(height / 2.6)
         bottomRightRadius: Math.round(height / 2.6)
@@ -77,13 +93,20 @@ MouseArea {
         id: row
         anchors.verticalCenter: parent.verticalCenter
         anchors.verticalCenterOffset: button.down ? 1 : 0
-        x: 9 + (button.down ? 1 : 0)
-        spacing: 4
+        x: (button.gercek ? 8 : 9) + (button.down ? 1 : 0)
+        spacing: button.gercek ? 5 : 4
 
         Item {
-            Layout.preferredWidth: Math.min(22, button.h - 6)
+            Layout.preferredWidth: button.gercek ? 25 : Math.min(22, button.h - 6)
             Layout.preferredHeight: Layout.preferredWidth
+            Image {
+                anchors.centerIn: parent
+                visible: button.gercek
+                source: button.varlik + "start-flag.png"
+                smooth: false
+            }
             Kirigami.Icon {
+                visible: !button.gercek
                 id: shadowIcon
                 anchors.fill: parent
                 anchors.leftMargin: 1
@@ -94,6 +117,7 @@ MouseArea {
                 opacity: 0.6
             }
             Kirigami.Icon {
+                visible: !button.gercek
                 anchors.fill: parent
                 source: Plasmoid.configuration.icon
                 isMask: Plasmoid.configuration.icon.endsWith("-symbolic")
@@ -105,20 +129,24 @@ MouseArea {
             Layout.preferredWidth: label.implicitWidth + 2
             Layout.preferredHeight: label.implicitHeight
             Text {
-                x: 1; y: 1
+                // XP: TextShadowOffset 2,2, renk 69 76 16
+                x: button.gercek ? 2 : 1
+                y: button.gercek ? 2 : 1
                 text: label.text
                 font: label.font
-                color: "#0F3F0F"
-                opacity: 0.85
+                color: button.gercek ? "#454C10" : "#0F3F0F"
+                opacity: button.gercek ? 1.0 : 0.85
             }
             Text {
                 id: label
                 text: i18nc("Start button label (lowercase, like Windows XP)", "start")
                 color: "#FFFFFF"
-                font.family: "Trebuchet MS"
+                // XP: "Franklin Gothic Medium, 14, italic"
+                font.family: button.gercek ? "Franklin Gothic Medium" : "Trebuchet MS"
                 font.italic: true
-                font.bold: true
-                font.pixelSize: Math.round(button.h * 0.6)
+                font.bold: !button.gercek
+                font.pixelSize: button.gercek ? 19 : Math.round(button.h * 0.6)
+                renderType: Text.NativeRendering
             }
         }
     }

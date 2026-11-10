@@ -30,10 +30,14 @@ PlasmaCore.Dialog {
     title: "xp-start-menu"
 
     // ---- ölçüler ve renkler (Luna) ----
-    readonly property int menuWidth: 410
+    // Gerçek XP varlıkları varsa (xp_iceaktar) Luna'nın StartPanel bitmap'leri kullanılır
+    readonly property string varlik: StandardPaths.writableLocation(StandardPaths.GenericDataLocation) + "/xpthemeplasma/varlik/"
+    readonly property bool gercek: probe.status === Image.Ready
+    readonly property int menuWidth: gercek ? 380 : 410            // XP: DefaultPaneSize 380
     readonly property int shadowSize: 4
     readonly property color hoverColor: "#316AC5"
-    readonly property color rightText: "#00136B"
+    readonly property color rightText: gercek ? "#0A246A" : "#00136B"  // StartPanel.PlacesList TextColor
+    readonly property color leftText: gercek ? "#000000" : "#000000"
     readonly property string uiFont: "Tahoma"
 
     property bool allProgramsOpen: allProgramsMenu.opened
@@ -154,9 +158,17 @@ PlasmaCore.Dialog {
     component Separator: Item {
         id: sep
         property color tint: "#D5D2CA"
+        property bool places: false
         Layout.fillWidth: true
         Layout.preferredHeight: 9
+        Image {
+            anchors.centerIn: parent
+            visible: menu.gercek
+            source: menu.varlik + (sep.places ? "panel-placessep.png" : "panel-progsep.png")
+            smooth: false
+        }
         Rectangle {
+            visible: !menu.gercek
             anchors.centerIn: parent
             width: parent.width - 16
             height: 1
@@ -218,7 +230,7 @@ PlasmaCore.Dialog {
                     font.family: menu.uiFont
                     font.pixelSize: 11
                     font.bold: leftItem.pinned
-                    color: leftItem.containsMouse ? "#FFFFFF" : "#000000"
+                    color: leftItem.containsMouse ? "#FFFFFF" : menu.leftText
                 }
                 Text {
                     Layout.fillWidth: true
@@ -227,7 +239,7 @@ PlasmaCore.Dialog {
                     elide: Text.ElideRight
                     font.family: menu.uiFont
                     font.pixelSize: 11
-                    color: leftItem.containsMouse ? "#D8E4F8" : "#6D6D6D"
+                    color: leftItem.containsMouse ? "#D8E4F8" : "#808080"
                 }
             }
         }
@@ -243,7 +255,7 @@ PlasmaCore.Dialog {
         signal activated
 
         Layout.fillWidth: true
-        Layout.preferredHeight: 28
+        Layout.preferredHeight: menu.gercek ? 26 : 28
         hoverEnabled: true
         onClicked: activated()
         onContainsMouseChanged: {
@@ -303,6 +315,7 @@ PlasmaCore.Dialog {
         Layout.preferredWidth: fbRow.implicitWidth + 12
         hoverEnabled: true
         Rectangle {
+            visible: !menu.gercek
             anchors.fill: parent
             radius: 3
             color: "#FFFFFF"
@@ -312,7 +325,20 @@ PlasmaCore.Dialog {
             id: fbRow
             anchors.centerIn: parent
             spacing: 4
+            Item {
+                // logoff-icons.png: [Çıkar, Oturumu Kapat (anahtar), Kapat (güç)] 24x24
+                visible: menu.gercek
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
+                clip: true
+                Image {
+                    x: fb.iconName === "system-shutdown" ? -48 : -24
+                    source: menu.varlik + (fb.containsMouse ? "panel-logoffbuttons-hot.png" : "panel-logoffbuttons.png")
+                    smooth: false
+                }
+            }
             Rectangle {
+                visible: !menu.gercek
                 Layout.preferredWidth: 24
                 Layout.preferredHeight: 24
                 radius: 4
@@ -364,7 +390,8 @@ PlasmaCore.Dialog {
                 font.family: menu.uiFont
                 font.pixelSize: 11
                 color: "#FFFFFF"
-                style: Text.Raised
+                font.underline: menu.gercek && fb.containsMouse
+                style: menu.gercek ? Text.Normal : Text.Raised
                 styleColor: "#0A2D7A"
             }
         }
@@ -411,6 +438,12 @@ PlasmaCore.Dialog {
             function onRowsRemoved() { menu.refreshPinned(); }
         }
 
+        Image {
+            id: probe
+            visible: false
+            source: menu.varlik + "panel-user.png"
+        }
+
         Timer {
             id: hoverTimer
             interval: 450
@@ -427,8 +460,8 @@ PlasmaCore.Dialog {
                 y: index + 1
                 width: frame.width
                 height: frame.height
-                topLeftRadius: 7
-                topRightRadius: 7
+                topLeftRadius: menu.gercek ? 6 : 7
+                topRightRadius: menu.gercek ? 6 : 7
                 color: "#000000"
                 opacity: 0.09
             }
@@ -437,27 +470,38 @@ PlasmaCore.Dialog {
         Rectangle {
             id: frame
             width: menu.menuWidth
-            height: layout.implicitHeight + 2
+            height: layout.implicitHeight + (menu.gercek ? 0 : 2)
             topLeftRadius: 7
             topRightRadius: 7
-            color: "#245EDB"
+            color: menu.gercek ? "transparent" : "#245EDB"
             border.color: "#1C4FC2"
-            border.width: 1
+            border.width: menu.gercek ? 0 : 1
 
             ColumnLayout {
                 id: layout
-                x: 1
-                y: 1
-                width: parent.width - 2
+                x: menu.gercek ? 0 : 1
+                y: menu.gercek ? 0 : 1
+                width: parent.width - (menu.gercek ? 0 : 2)
                 spacing: 0
 
                 // ---- başlık: kullanıcı resmi + ad ----
                 Rectangle {
+                    id: header
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 58
+                    Layout.preferredHeight: menu.gercek ? 64 : 58
                     topLeftRadius: 6
                     topRightRadius: 6
-                    gradient: Gradient {
+                    color: "transparent"
+                    BorderImage {
+                        anchors.fill: parent
+                        visible: menu.gercek
+                        source: menu.varlik + "panel-user.png"
+                        border { left: 59; right: 60; top: 62; bottom: 0 }
+                        smooth: false
+                    }
+                    gradient: menu.gercek ? null : headerGradient
+                    Gradient {
+                        id: headerGradient
                         GradientStop { position: 0.00; color: "#1868CE" }
                         GradientStop { position: 0.12; color: "#0E60CB" }
                         GradientStop { position: 0.20; color: "#0E60CB" }
@@ -470,6 +514,7 @@ PlasmaCore.Dialog {
                     }
                     // üst parıltı
                     Rectangle {
+                        visible: !menu.gercek
                         x: 6; y: 1
                         width: parent.width - 12
                         height: 1
@@ -477,19 +522,29 @@ PlasmaCore.Dialog {
                     }
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 7
-                        spacing: 8
+                        anchors.leftMargin: menu.gercek ? 6 : 7
+                        spacing: menu.gercek ? 6 : 8
                         Rectangle {
-                            Layout.preferredWidth: 48
-                            Layout.preferredHeight: 48
+                            Layout.preferredWidth: menu.gercek ? 54 : 48
+                            Layout.preferredHeight: menu.gercek ? 54 : 48
                             radius: 4
-                            color: "#FFFFFF"
+                            color: menu.gercek ? "transparent" : "#FFFFFF"
                             border.color: "#D8E4F8"
-                            border.width: 1
+                            border.width: menu.gercek ? 0 : 1
+                            BorderImage {
+                                // XP: UserTileBackground, kenar payları 6,10,6,10
+                                visible: menu.gercek
+                                anchors.fill: parent
+                                anchors.rightMargin: -4
+                                anchors.bottomMargin: -4
+                                source: menu.varlik + "panel-usertile.png"
+                                border { left: 6; right: 10; top: 6; bottom: 10 }
+                                smooth: false
+                            }
                             visible: Plasmoid.configuration.showUserPicture
                             Rectangle {
                                 anchors.fill: parent
-                                anchors.margins: 2
+                                anchors.margins: menu.gercek ? 3 : 2
                                 radius: 3
                                 clip: true
                                 color: "#6DA7E7"
@@ -513,18 +568,20 @@ PlasmaCore.Dialog {
                             Layout.fillWidth: true
                             text: kuser.fullName || kuser.loginName
                             elide: Text.ElideRight
-                            font.family: "Trebuchet MS"
-                            font.pixelSize: 15
-                            font.bold: true
+                            // XP: Franklin Gothic Medium 14, gölge 9,66,139 (2,2)
+                            font.family: menu.gercek ? "Franklin Gothic Medium" : "Trebuchet MS"
+                            font.pixelSize: menu.gercek ? 19 : 15
+                            font.bold: !menu.gercek
                             color: "#FFFFFF"
                             style: Text.Raised
-                            styleColor: "#0F2B6B"
+                            styleColor: menu.gercek ? "#09428B" : "#0F2B6B"
                         }
                     }
                 }
 
                 // ---- turuncu ayraç ----
                 Rectangle {
+                    visible: !menu.gercek
                     Layout.fillWidth: true
                     Layout.preferredHeight: 2
                     gradient: Gradient {
@@ -538,22 +595,30 @@ PlasmaCore.Dialog {
                 // ---- iki sütun ----
                 RowLayout {
                     Layout.fillWidth: true
-                    Layout.leftMargin: 1
-                    Layout.rightMargin: 1
+                    Layout.leftMargin: menu.gercek ? 0 : 1
+                    Layout.rightMargin: menu.gercek ? 0 : 1
                     spacing: 0
 
                     // sol: beyaz, sabitlenmiş + sık kullanılan
                     Rectangle {
-                        Layout.preferredWidth: 200
+                        Layout.preferredWidth: menu.gercek ? 190 : 200
                         Layout.fillHeight: true
-                        Layout.minimumHeight: leftCol.implicitHeight
+                        Layout.minimumHeight: leftCol.implicitHeight + (menu.gercek ? 14 : 0)
                         color: "#FFFFFF"
+                        BorderImage {
+                            visible: menu.gercek
+                            anchors.fill: parent
+                            source: menu.varlik + "panel-proglist.png"
+                            border { left: 2; right: 153; top: 3; bottom: 0 }
+                            smooth: false
+                        }
 
                         ColumnLayout {
                             id: leftCol
                             anchors.fill: parent
-                            anchors.topMargin: 5
-                            anchors.bottomMargin: 3
+                            anchors.topMargin: menu.gercek ? 9 : 5      // XP ContentMargins 6 4 9 5
+                            anchors.bottomMargin: menu.gercek ? 0 : 3
+                            anchors.leftMargin: menu.gercek ? 2 : 0
                             spacing: 0
 
                             Repeater {
@@ -613,7 +678,14 @@ PlasmaCore.Dialog {
                                         font.bold: true
                                         color: (allProgramsButton.containsMouse || menu.allProgramsOpen) ? "#FFFFFF" : "#000000"
                                     }
+                                    Image {
+                                        visible: menu.gercek
+                                        source: menu.varlik + ((allProgramsButton.containsMouse || menu.allProgramsOpen)
+                                                               ? "panel-more-arrow-hot.png" : "panel-more-arrow.png")
+                                        smooth: false
+                                    }
                                     Rectangle {
+                                        visible: !menu.gercek
                                         Layout.preferredWidth: 18
                                         Layout.preferredHeight: 18
                                         radius: 4
@@ -649,7 +721,15 @@ PlasmaCore.Dialog {
                         Layout.fillHeight: true
                         Layout.minimumHeight: rightCol.implicitHeight + 10
                         color: "#D3E5FA"
+                        BorderImage {
+                            visible: menu.gercek
+                            anchors.fill: parent
+                            source: menu.varlik + "panel-places.png"
+                            border { left: 172; right: 7; top: 3; bottom: 1 }
+                            smooth: false
+                        }
                         Rectangle {
+                            visible: !menu.gercek
                             width: 1
                             height: parent.height
                             color: "#95BDEE"
@@ -658,8 +738,9 @@ PlasmaCore.Dialog {
                         ColumnLayout {
                             id: rightCol
                             anchors.fill: parent
-                            anchors.leftMargin: 1
-                            anchors.topMargin: 5
+                            anchors.leftMargin: menu.gercek ? 2 : 1       // XP ContentMargins 4 6 9 5
+                            anchors.rightMargin: menu.gercek ? 6 : 0
+                            anchors.topMargin: menu.gercek ? 9 : 5
                             anchors.bottomMargin: 5
                             spacing: 0
 
@@ -688,7 +769,7 @@ PlasmaCore.Dialog {
                                 text: i18n("My Network Places"); iconName: "network-workgroup"
                                 onActivated: menu.run({ "cmd": "dolphin --new-window remote:/" })
                             }
-                            Separator { tint: "#A9C5EB" }
+                            Separator { tint: "#A9C5EB"; places: true }
                             RightItem {
                                 text: i18n("Control Panel"); iconName: "preferences-system"
                                 onActivated: menu.run({ "cmd": "systemsettings" })
@@ -697,7 +778,7 @@ PlasmaCore.Dialog {
                                 text: i18n("Printers and Faxes"); iconName: "printer"
                                 onActivated: menu.run({ "cmd": "kcmshell6 kcm_printer_manager" })
                             }
-                            Separator { tint: "#A9C5EB" }
+                            Separator { tint: "#A9C5EB"; places: true }
                             RightItem {
                                 text: i18n("Help and Support"); iconName: "help-browser"
                                 onActivated: menu.run({ "cmd": "khelpcenter" })
@@ -719,7 +800,17 @@ PlasmaCore.Dialog {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
-                    gradient: Gradient {
+                    color: "transparent"
+                    BorderImage {
+                        visible: menu.gercek
+                        anchors.fill: parent
+                        source: menu.varlik + "panel-logoff.png"
+                        border { left: 49; right: 47; top: 0; bottom: 38 }
+                        smooth: false
+                    }
+                    gradient: menu.gercek ? null : footerGradient
+                    Gradient {
+                        id: footerGradient
                         GradientStop { position: 0.00; color: "#4282D6" }
                         GradientStop { position: 0.05; color: "#418AE3" }
                         GradientStop { position: 0.17; color: "#418AE3" }

@@ -6,7 +6,7 @@ msgstr ""
 
 msgctxt "Start button label (lowercase, like Windows XP)"
 msgid "start"
-msgstr "başlat"
+msgstr "Başlat"
 
 msgid "Click here to begin"
 msgstr "Başlamak için burayı tıklatın"
