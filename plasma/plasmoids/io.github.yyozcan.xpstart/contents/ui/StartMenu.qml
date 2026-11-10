@@ -17,6 +17,7 @@ import org.kde.coreaddons as KCoreAddons
 import org.kde.plasma.private.sessions as Sessions
 
 import "code/tools.js" as Tools
+import "code/xpdizin.js" as XpDizin
 
 PlasmaCore.Dialog {
     id: menu
@@ -124,7 +125,8 @@ PlasmaCore.Dialog {
         if (allProgramsMenu.opened) {
             return;
         }
-        allProgramsMenu.actionList = buildApps(rootModel, 0);
+        // XP düzeni: Donatılar, Başlangıç, Oyunlar, program klasörleri, kısayollar
+        allProgramsMenu.actionList = XpDizin.kur(rootModel, function () { menu.visible = false; }, "applications-other");
         allProgramsMenu.menu.placement = PlasmaExtras.Menu.RightPosedBottomAlignedPopup;
         allProgramsMenu.menu.openRelative();
     }
@@ -188,7 +190,7 @@ PlasmaCore.Dialog {
         required property int index
         property QtObject sourceModel
         property bool pinned: false
-        readonly property string titleText: model.display
+        readonly property string titleText: XpDizin.xpAd(model.favoriteId, model.display)
         readonly property string subtitleText: pinned && model.description ? model.description : ""
 
         Layout.fillWidth: true

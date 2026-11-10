@@ -4,12 +4,54 @@
     SPDX-License-Identifier: GPL-3.0-or-later
 */
 import QtQuick
+import QtCore
 
 Rectangle {
     id: root
     color: "#000000"
 
     property int stage
+
+    // Gerçek XP açılış ekranı (kendi XP kopyandan içe aktarıldıysa)
+    readonly property string varlik: StandardPaths.writableLocation(StandardPaths.GenericDataLocation) + "/xpthemeplasma/varlik/"
+    readonly property bool gercek: bootImg.status === Image.Ready
+
+    Image {
+        id: bootImg
+        // XP 640x480'de çizilir; 4:3 korunarak ekrana ölçeklenir (yanlar siyah)
+        readonly property real k: Math.min(root.width / 640, root.height / 480)
+        width: 640 * k
+        height: 480 * k
+        anchors.centerIn: parent
+        source: root.varlik + "boot.png"
+        smooth: true
+        visible: root.gercek
+
+        // ilerleme kutusunun içi: x 258..377, y 354..362 (640x480 koordinatları)
+        Item {
+            x: 258 * bootImg.k
+            y: 354 * bootImg.k
+            width: (377 - 258 + 1) * bootImg.k
+            height: 9 * bootImg.k
+            clip: true
+            Image {
+                id: bootBlocks
+                width: 22 * bootImg.k
+                height: 9 * bootImg.k
+                source: root.varlik + "boot-blok.png"
+                smooth: false
+                // XP: bloklar 8 piksellik adımlarla soldan sağa kayar
+                property int adim: 0
+                x: (adim * 8 - 22) * bootImg.k
+                Timer {
+                    interval: 50
+                    running: root.gercek
+                    repeat: true
+                    onTriggered: bootBlocks.adim = (bootBlocks.adim + 1) % 19
+                }
+            }
+        }
+    }
 
     onStageChanged: {
         if (stage === 6) {
@@ -19,6 +61,7 @@ Rectangle {
 
     Item {
         id: logo
+        visible: !root.gercek
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -40
         width: row.width
@@ -60,6 +103,7 @@ Rectangle {
     // ilerleme kutusu: 3 mavi blok soldan sağa kayar
     Rectangle {
         id: box
+        visible: !root.gercek
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: logo.bottom
         anchors.topMargin: 60
@@ -102,6 +146,7 @@ Rectangle {
     }
 
     Text {
+        visible: !root.gercek
         anchors.left: parent.left
         anchors.bottom: parent.bottom
         anchors.margins: 30

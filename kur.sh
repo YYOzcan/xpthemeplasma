@@ -28,6 +28,11 @@ if [[ "${1:-}" == "--sistem" ]]; then
     install -Dm644 session/xpthemeplasma.desktop /usr/share/wayland-sessions/xpthemeplasma.desktop
     rm -rf /usr/share/sddm/themes/xpthemeplasma
     cp -r sddm/xpthemeplasma /usr/share/sddm/themes/xpthemeplasma
+    # kendi XP kopyandan içe aktarılan logonui bitmap'leri (önce kullanıcı olarak: bash kur.sh)
+    if ls build/varlik/logon-*.png >/dev/null 2>&1; then
+        mkdir -p /usr/share/sddm/themes/xpthemeplasma/xp
+        cp build/varlik/logon-*.png /usr/share/sddm/themes/xpthemeplasma/xp/
+    fi
     chmod -R a+rX /usr/share/sddm/themes/xpthemeplasma
     echo "Oturum kuruldu: SDDM'de 'XPThemePlasma (Wayland)' seçilebilir."
     echo "XP karşılama ekranı kuruldu (etkin değil). Etkinleştirmek için:"
@@ -53,7 +58,8 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$DATA/locale/tr/LC_MESSAGES/xpthemeplasma.mo" \
            "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
-           "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme"
+           "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
+           "$DATA/kwin/tabbox/xp_alttab"
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -106,6 +112,7 @@ fi
 for p in plasma/plasmoids/*/; do
     kopyala "$p" "$DATA/plasma/plasmoids/$(basename "$p")"
 done
+kopyala kwin/tabbox/xp_alttab "$DATA/kwin/tabbox/xp_alttab"
 kopyala plasma/shells/io.github.yyozcan.xpshell "$DATA/plasma/shells/io.github.yyozcan.xpshell"
 kopyala plasma/layout-templates/io.github.yyozcan.xptaskbar "$DATA/plasma/layout-templates/io.github.yyozcan.xptaskbar"
 kopyala plasma/look-and-feel/io.github.yyozcan.xpluna "$DATA/plasma/look-and-feel/io.github.yyozcan.xpluna"

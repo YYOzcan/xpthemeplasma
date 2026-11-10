@@ -126,6 +126,37 @@ def varliklar(ms, xp, out):
             a = np.asarray(im).copy()
             a[np.all(a[:, :, :3] == (255, 0, 255), axis=2)] = 0
             save(name, Image.fromarray(a))
+    # ---- açılış ekranı (ntoskrnl): kaynakta palet siyah tutulur, XP çalışma anında yükler.
+    # Bayrak/metin bölgelerinden çıkarılan XP açılış paleti:
+    boot_pal = [(0, 0, 0), (32, 32, 32), (70, 70, 70), (32, 26, 21), (83, 101, 1), (178, 53, 5),
+                (126, 126, 126), (137, 146, 0), (45, 62, 210), (247, 107, 32), (94, 127, 252),
+                (142, 220, 4), (243, 188, 27), (188, 188, 188), (255, 255, 255), (252, 252, 252)]
+    palb = b"".join(bytes([bb, gg, rr, 0]) for rr, gg, bb in boot_pal)
+    nt = Path(xp) / "ikon/ntoskrnl.exe"
+    if nt.exists():
+        kr = PEResources(nt.read_bytes())
+        for rid, name in [(1, "boot"), (8, "boot-blok")]:
+            d = kr.get("BITMAP", rid)
+            if d:
+                im, _ = decode_dib(d[:40] + palb + d[104:])
+                save(name, im)
+        meta["boot"] = {"box": [255, 351, 380, 365], "inner": [258, 354, 377, 362]}
+
+    # ---- karşılama ekranı (logonui.exe)
+    lu = Path(xp) / "ikon/logonui.exe"
+    if lu.exists():
+        lr = PEResources(lu.read_bytes())
+        for rid, name in [(100, "logon-glow"), (112, "logon-selected"), (102, "logon-password"),
+                          (113, "logon-tile"), (119, "logon-tile-hot"), (114, "logon-userpic"),
+                          (123, "logon-logo"), (103, "logon-go"), (104, "logon-go-hot"),
+                          (105, "logon-help"), (106, "logon-help-hot"), (107, "logon-power"),
+                          (121, "logon-power-hot"), (124, "logon-divider"), (125, "logon-topline"),
+                          (126, "logon-bottomline")]:
+            d = lr.get("BITMAP", rid)
+            if d:
+                im, _ = decode_dib(d)
+                save(name, im)
+
     strings = ex.strings()
     meta["strings"] = {"start": strings.get(578, "start"), "startTip": strings.get(533, ""),
                        "showHidden": strings.get(543, ""), "hide": strings.get(542, "")}

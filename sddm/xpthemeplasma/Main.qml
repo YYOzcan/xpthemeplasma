@@ -13,6 +13,10 @@ Rectangle {
     color: "#5A7EDC"
 
     readonly property string uiFont: "Tahoma"
+    // kendi XP kopyandan içe aktarılan logonui.exe bitmap'leri (kur.sh --sistem kopyalar)
+    readonly property bool gercek: probe.status === Image.Ready
+    function xp(ad) { return Qt.resolvedUrl("xp/" + ad + ".png"); }
+    Image { id: probe; visible: false; source: root.xp("logon-logo") }
     property int selectedUser: -1
     property int sessionIndex: sessionModel.lastIndex
     property string errorText: ""
@@ -42,6 +46,7 @@ Rectangle {
     // orta kısım: sol üstte hafif parıltı
     Rectangle {
         anchors.fill: parent
+        visible: !root.gercek
         gradient: Gradient {
             orientation: Gradient.Horizontal
             GradientStop { position: 0.0; color: "#7A9BE6" }
@@ -56,7 +61,15 @@ Rectangle {
         anchors { left: parent.left; right: parent.right; top: parent.top }
         height: Math.round(root.height * 0.11)
         color: "#00309C"
+        Image {
+            visible: root.gercek
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 2
+            source: root.xp("logon-topline")
+        }
         Rectangle {
+            visible: !root.gercek
             anchors.bottom: parent.bottom
             width: parent.width
             height: 2
@@ -79,7 +92,15 @@ Rectangle {
             GradientStop { position: 0.0; color: "#003399" }
             GradientStop { position: 1.0; color: "#00287F" }
         }
+        Image {
+            visible: root.gercek
+            anchors.top: parent.top
+            width: parent.width
+            height: 3
+            source: root.xp("logon-bottomline")
+        }
         Rectangle {
+            visible: !root.gercek
             anchors.top: parent.top
             width: parent.width
             height: 2
@@ -106,7 +127,12 @@ Rectangle {
                 id: powerRow
                 spacing: 8
                 anchors.verticalCenter: parent.verticalCenter
+                Image {
+                    visible: root.gercek
+                    source: root.xp(powerButton.containsMouse ? "logon-power-hot" : "logon-power")
+                }
                 Rectangle {
+                    visible: !root.gercek
                     width: 28; height: 28; radius: 5
                     border.color: "#FFFFFF"
                     gradient: Gradient {
@@ -171,13 +197,30 @@ Rectangle {
         id: middle
         anchors { left: parent.left; right: parent.right; top: topBand.bottom; bottom: bottomBand.top }
 
+        Image {
+            // XP: sol üstte radyal parıltı
+            visible: root.gercek
+            x: 0
+            y: 0
+            source: root.xp("logon-glow")
+        }
+
         // dikey ayraç
+        Image {
+            visible: root.gercek
+            x: divider.x
+            anchors.verticalCenter: parent.verticalCenter
+            width: 1
+            height: parent.height * 0.82
+            source: root.xp("logon-divider")
+        }
         Rectangle {
             id: divider
             x: Math.round(parent.width * 0.5)
             anchors.verticalCenter: parent.verticalCenter
             width: 1
             height: parent.height * 0.82
+            opacity: root.gercek ? 0 : 1
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "#005A7EDC" }
                 GradientStop { position: 0.5; color: "#FFFFFF" }
@@ -191,7 +234,13 @@ Rectangle {
             anchors.rightMargin: 36
             anchors.verticalCenter: parent.verticalCenter
             spacing: 18
+            Image {
+                visible: root.gercek
+                anchors.right: parent.right
+                source: root.xp("logon-logo")
+            }
             Item {
+                visible: !root.gercek
                 anchors.right: parent.right
                 width: logoRow.width
                 height: logoRow.height + kdeText.height
@@ -260,11 +309,18 @@ Rectangle {
                 height: selected ? 120 : 70
 
                 // seçili kullanıcı: sağa doğru solan koyu mavi şerit
+                BorderImage {
+                    anchors.fill: parent
+                    anchors.rightMargin: parent.width * 0.25
+                    visible: tile.selected && root.gercek
+                    source: root.xp("logon-selected")
+                    border { left: 10; right: 10; top: 10; bottom: 10 }
+                }
                 Rectangle {
                     anchors.fill: parent
                     anchors.rightMargin: parent.width * 0.25
                     radius: 8
-                    visible: tile.selected
+                    visible: tile.selected && !root.gercek
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
                         GradientStop { position: 0.0; color: "#00309C" }
@@ -286,6 +342,12 @@ Rectangle {
                 }
 
                 // avatar
+                Image {
+                    visible: root.gercek
+                    x: frame.x - 3
+                    y: frame.y - 3
+                    source: root.xp((tileMouse.containsMouse || tile.selected) ? "logon-tile-hot" : "logon-tile")
+                }
                 Rectangle {
                     id: frame
                     x: 10
@@ -293,13 +355,14 @@ Rectangle {
                     width: 52
                     height: 52
                     radius: 5
-                    color: "#FFFFFF"
-                    border.width: 2
+                    color: root.gercek ? "transparent" : "#FFFFFF"
+                    border.width: root.gercek ? 0 : 2
                     border.color: (tileMouse.containsMouse || tile.selected) ? "#F9B733" : "#FFFFFF"
                     Image {
                         anchors.fill: parent
-                        anchors.margins: 3
-                        source: tile.icon
+                        anchors.margins: root.gercek ? 2 : 3
+                        source: (root.gercek && (tile.icon.length === 0 || tile.icon.indexOf("default") !== -1))
+                                ? root.xp("logon-userpic") : tile.icon
                         fillMode: Image.PreserveAspectCrop
                         smooth: true
                     }
@@ -354,7 +417,12 @@ Rectangle {
                             width: 24; height: 24
                             hoverEnabled: true
                             onClicked: root.doLogin()
+                            Image {
+                                visible: root.gercek
+                                source: root.xp(go.containsMouse ? "logon-go-hot" : "logon-go")
+                            }
                             Rectangle {
+                                visible: !root.gercek
                                 anchors.fill: parent
                                 radius: 4
                                 border.color: "#FFFFFF"

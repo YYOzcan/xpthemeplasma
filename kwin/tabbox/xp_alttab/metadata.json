@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "KWin/WindowSwitcher",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Description": "Windows XP style Alt+Tab (CoolSwitch)",
+        "Description[tr]": "Windows XP biçemli Alt+Tab (CoolSwitch)",
+        "Id": "xp_alttab",
+        "License": "GPL-2.0-or-later",
+        "Name": "XP Alt+Tab",
+        "Name[tr]": "XP Alt+Tab"
+    }
+}

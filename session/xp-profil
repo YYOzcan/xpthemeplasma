@@ -51,6 +51,7 @@ YONETILEN = {
                     "windowapertureEnabled": "false", "fadedesktopEnabled": "false",
                     "slideEnabled": "false", "dimscreenEnabled": "false",
                     "kwin4_effect_geometry_changeEnabled": "false"},
+        "TabBox": {"LayoutName": "xp_alttab", "HighlightWindows": "false", "ShowDesktopMode": "0"},
     },
     "plasmarc": {"Theme": {"name": "XP-Luna"}},
     "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},

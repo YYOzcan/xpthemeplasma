@@ -33,6 +33,12 @@ def decode_dib(dib: bytes) -> Image.Image:
         off += n * 4
     elif comp == 3:  # BI_BITFIELDS
         off += 12
+    if comp in (1, 2):   # BI_RLE8 / BI_RLE4
+        idx = _rle(dib[off:], w, h, 8 if comp == 1 else 4)
+        rgba = np.dstack([palette[idx], np.full((h, w), 255, np.uint8)])
+        if bottom_up:
+            rgba = rgba[::-1]
+        return Image.fromarray(np.ascontiguousarray(rgba), "RGBA"), bpp
     stride = ((w * bpp + 31) // 32) * 4
     raw = np.frombuffer(dib, np.uint8, stride * h, off).reshape(h, stride)
     if bpp == 32:
@@ -59,6 +65,45 @@ def decode_dib(dib: bytes) -> Image.Image:
     if bottom_up:
         rgba = rgba[::-1]
     return Image.fromarray(np.ascontiguousarray(rgba), "RGBA"), bpp
+
+
+def _rle(data, w, h, bits):
+    """RLE8/RLE4 piksel verisini (alttan üste satırlar) indeks dizisine açar."""
+    out = np.zeros((h, w), np.uint8)
+    x = y = i = 0
+    n = len(data)
+    while i + 1 < n and y < h:
+        cnt, val = data[i], data[i + 1]
+        i += 2
+        if cnt > 0:
+            for k in range(cnt):
+                if x < w:
+                    out[y, x] = val if bits == 8 else ((val >> 4) if k % 2 == 0 else (val & 15))
+                x += 1
+        elif val == 0:
+            x, y = 0, y + 1
+        elif val == 1:
+            break
+        elif val == 2:
+            x += data[i]
+            y += data[i + 1]
+            i += 2
+        else:
+            if bits == 8:
+                for k in range(val):
+                    if x < w:
+                        out[y, x] = data[i + k]
+                    x += 1
+                i += val + (val & 1)
+            else:
+                nbytes = (val + 1) // 2
+                for k in range(val):
+                    b = data[i + k // 2]
+                    if x < w:
+                        out[y, x] = (b >> 4) if k % 2 == 0 else (b & 15)
+                    x += 1
+                i += nbytes + (nbytes & 1)
+    return out
 
 
 def unpremultiply(img: Image.Image) -> Image.Image:
