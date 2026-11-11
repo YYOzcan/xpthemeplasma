@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Ses Denetimi
+Comment=Hoparlör ses ayarını ve programların ses düzeylerini denetler.
+Exec=xp-sesdenetimi
+Icon=multimedia-volume-control
+Categories=AudioVideo;Audio;Mixer;

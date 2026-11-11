@@ -70,11 +70,11 @@ static QList<Kategori> kategoriler() {
                {"Bluetooth Aygıtları", "preferences-system-bluetooth", "kcm:kcm_bluetooth"}}});
     l.append({"Program Ekle veya Kaldır", "system-software-install", {}, {}});
     l.append({"Sesler, Konuşma ve Ses Aygıtları", "preferences-desktop-sound",
-              {{"Bilgisayarın ses düzeyini ayarlayın", "kcm:kcm_pulseaudio"},
-               {"Ses düzenini değiştirin", "kcm:kcm_soundtheme"},
-               {"Hoparlör ayarlarını değiştirin", "kcm:kcm_pulseaudio"}},
-              {{"Sesler ve Ses Aygıtları", "audio-card", "kcm:kcm_pulseaudio"},
-               {"Ses Düzeni", "preferences-desktop-sound", "kcm:kcm_soundtheme"},
+              {{"Bilgisayarın ses düzeyini ayarlayın", "xp-ses 0"},
+               {"Ses düzenini değiştirin", "xp-ses 1"},
+               {"Hoparlör ayarlarını değiştirin", "xp-ses 0"}},
+              {{"Sesler ve Ses Aygıtları", "audio-card", "xp-ses"},
+               {"Ses Denetimi", "multimedia-volume-control", "xp-sesdenetimi"},
                {"Bildirimler", "preferences-desktop-notification-bell", "kcm:kcm_notifications"}}});
     l.append({"Performans ve Bakım", "preferences-system-performance",
               {{"Bu bilgisayarla ilgili bilgileri görün", "xp-sistem"},

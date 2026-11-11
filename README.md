@@ -48,7 +48,9 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 | **XPLuna** renk şeması | `#ECE9D8` yüzey, `#316AC5` seçim | `plasma/color_scheme` |
 | **Windows Gezgini** | XP Gezgini: Döşemeler/Simgeler/Liste/Ayrıntılar, görev bölmesi (Dosya ve Klasör Görevleri, Diğer Yerler, Ayrıntılar), Klasörler ağacı, Bilgisayarım; XP oturumunda klasörlerin varsayılanı | `apps/gezgin` |
 | **Denetim Masası** | XP Kategori ve Klasik Görünüm; her simge ilgili KDE ayar modülünü kendi penceresinde açar | `apps/denetim` |
-| **Ses Düzeyi** | Tepsideki XP ses penceresi: "Ses Düzeyi", XP kaydırıcısı, "Sessiz"; tekerlekle ses, orta tıkla sessiz | `plasma/plasmoids/io.github.yyozcan.xpses` |
+| **Ses Düzeyi** | Tepsideki XP hoparlörü: tek tık "Ses Düzeyi" penceresi (XP kaydırıcısı, "Sessiz"), çift tık Ses Denetimi, tekerlekle ses, orta tıkla sessiz, sağ tık "Ses Denetimini Aç / Ses Özelliklerini Ayarla". `wpctl` kullanır, Plasma'nın iç API'sine bağlı değildir | `plasma/plasmoids/io.github.yyozcan.xpses` |
+| **Ses Denetimi** | XP `sndvol32`: ana ses (Denge, Ses Ayarı, Tümü sessiz) ve ses çalan her program için bir sütun; `--kayit` ile kayıt düzeyleri. Değişiklikler `pactl subscribe` ile anında yansır | `apps/sesdenetimi`, `apps/ortak/xpses.h` |
+| **Ses ve Ses Aygıtları** | XP `mmsys.cpl`: Ses Ayarı (aygıt ses düzeyi, Sessiz, tepsi simgesi), Sesler (ses düzeni, olay başına XP sesi, dinleme, Gözat), Ses (varsayılan çalma/kayıt aygıtı), Donanım (ses kartları) | `apps/ses` |
 | **Bildirim balonları** | Bildirimler XP'nin sarı tepsi balonları olarak (kuyruk, XP kapatma düğmesi, balon sesi) | `plasma/plasmoids/io.github.yyozcan.xpbalon` |
 | **Hoş Geldiniz** | Oturum açılınca masaüstü yüklenirken XP'nin "Hoş Geldiniz" ekranı | `look-and-feel/.../splash` |
 | **Plymouth** | Bilgisayar açılırken XP açılış ekranı ve kayan mavi bloklar (en az 10 sn; simpledrm'den başlar, NVIDIA/AMD sürücüsüne geçince yeniden yerleşir); kapanış/yeniden başlatmada "Windows kapatılıyor…" (`sudo bash kur.sh --plymouth`, geri: `--plymouth-geri`) | `plymouth/` |
@@ -57,7 +59,7 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 | **Çalıştır** | XP Çalıştır penceresi (Windows+R): `cmd`, `notepad`, `calc`, `control`, `taskmgr`, `sysdm.cpl`, `desk.cpl`, `%USERPROFILE%`, URL'ler… | `apps/calistir`, `apps/ortak/xpkomut.h` |
 | **Sistem Özellikleri** | Genel (bu bilgisayarın dağıtımı, çekirdeği, işlemcisi, belleği; dağıtım logosu "Üreten ve destekleyen"), Bilgisayar Adı, Donanım, Gelişmiş. Windows+Pause | `apps/sistem` |
 | **Tarih ve Saat Özellikleri** | Takvim, analog saat, XP saat dilimi haritası, Internet Saati (timedatectl / timesyncd) | `apps/tarihsaat` |
-| **Görüntü Özellikleri** | Temalar, Masaüstü (duvar kağıdı, konum, renk), Ekran Koruyucu (ekran kilidi), Görünüm (yazı tipi boyutu), Ayarlar (çözünürlük) | `apps/gorunum` |
+| **Görüntü Özellikleri** | Temalar, Masaüstü (duvar kağıdı, konum, renk), Ekran Koruyucu, Görünüm (renk düzeni, yazı tipi boyutu), Ayarlar: çözünürlük (`kscreen-doctor`, XP'nin "15 saniyede eski durumuna döner" onayıyla), Gelişmiş > Genel (DPI → ölçek) ve Monitör (yenileme hızı) | `apps/gorunum` |
 | **Windows Hakkında** | `winver` ve programların Hakkında kutusu: XP şeridi, sürüm, kullanıcı, bellek | `apps/hakkinda` |
 | **Gerçek XP programları** | Kendi XP kopyandaki Hesap Makinesi, Paint, WordPad, Karakter Eşlem, Ses Kaydedicisi, Mayın Tarlası, Solitaire, FreeCell, Hearts, Örümcek Solitaire ve 3D Pinball, Wine ile ve Luna temasıyla (ayrı ön ek: `~/.local/share/xpthemeplasma/wine`) | `session/xp-wine` |
 | **Kilit ekranı** | Windows+L ve ekran koruyucu dönüşü XP'nin "Hoş Geldiniz" ekranı: kullanıcı kutucuğu, parola kutusu, yeşil ok, sarı balon uyarıları, Bilgisayarı Kapat (logonui UIFILE ölçüleri; SDDM de aynı) | `shells/…/lockscreen`, `sddm/` |
@@ -93,6 +95,25 @@ XP sistem programlarının pencere düzenleri ve metinleri kurulumda kendi XP ko
 Gerekenler: Plasma 6.8, `kvantum`, `python3` + `python-pillow` + `python-numpy`, `rsvg-convert` (librsvg), `msgfmt` (gettext),
 isteğe bağlı `wine` (gerçek XP programları),
 Tahoma / Trebuchet MS / Franklin Gothic yazı tipleri (ör. `ttf-ms-win11-auto`).
+
+## KDE güncellemeleri
+
+XPThemePlasma Plasma güncellendikçe elle bakım gerektirmeyecek biçimde kurulur:
+
+* **XP kabuğu yalnızca değiştirdiği dosyaları taşır** (yerleşim, kilit ekranı, oturum kapatma). Geri kalan her şey
+  `X-Plasma-FallbackPackage` ile Plasma'nın kendi masaüstü kabuğundan gelir ve onunla birlikte güncellenir.
+  Kabuk yapılandırma pencereleri her kurulumda kurulu Plasma'dan kopyalanıp küçük bir ekle üretilir (`tools/xp_kabuk.py`).
+* **Kilit ekranı ve oturum kapatma sarmalayıcıları** (`LockScreen.qml`, `Logout.qml`) Plasma'nın sağladığı arayüzü
+  denetler. Bir sürüm onu değiştirirse XP ekranı yerine Plasma'nın kendi ekranı açılır: kilit hiçbir zaman bozulmaz.
+* **Ses, ağ, saat, ekran ayarları** Plasma'nın sürümden sürüme değişen iç QML API'lerini değil kararlı komut satırı
+  araçlarını kullanır (`wpctl`, `pactl -f json`, `nmcli`, `kscreen-doctor -j`, `timedatectl`, `hostnamectl`).
+* **`xp-bakim`** her XP girişinde Qt / KDE Frameworks / Plasma kütüphanelerinin ve stok kabuk dosyalarının parmak izini
+  alır. Değiştiyse (KDE güncellendiyse) arka planda `kur.sh --guncelle` çalışır: XP programları yeni kütüphanelere
+  karşı yeniden derlenir, çeviri katmanı ve kabuk yapılandırması yeniden üretilir, sonunda bildirim gelir
+  (günlük: `~/.local/state/xpthemeplasma/bakim.log`; elle: `xp-bakim --zorla`).
+
+Plasma'nın iç arayüzüne hâlâ bağlı iki parça vardır: XP Paneli (ATP panelinin çatalı) ve XP Başlat'ın Tüm Programlar
+modeli (Kicker). Büyük bir Plasma sürümü bunları bozarsa yalnızca bu iki plasmoid güncellenmelidir.
 
 ## ATP ile birlikte nasıl çalışır?
 

@@ -31,6 +31,8 @@ MODULLER = {
     "shell32.dll": dict(dlg=[1003, 29952, 29953], str=list(range(8960, 8976)) + [60, 4097, 4098, 4099, 4100], menu=False,
                         bmp=[], ico=[160]),
     "winver.exe": dict(dlg=None, str=None, menu=False, bmp=[], ico=[]),
+    "mmsys.cpl": dict(dlg=[4905, 4876, 4866, 4886], str=None, menu=False, bmp=[], ico=[4379, 4380, 4381, 4367, 3004]),
+    "sndvol32.exe": dict(dlg=[101, 102], str=None, menu=True, bmp=[], ico=[300, 301, 302, 303, 304]),
     "appwiz.cpl": dict(dlg=[], str=None, menu=False, bmp=[], ico=[]),
     "netshell.dll": dict(dlg=[1802, 1806, 1807], str=None, menu=False, bmp=[], ico=[210, 190, 191, 192, 193, 195, 196]),
 }

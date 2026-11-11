@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Sesler ve Ses Aygıtları
+GenericName=Ses ve Ses Aygıtları Özellikleri
+Comment=Bilgisayarınızın ses düzenini değiştirin ya da hoparlör ve kayıt aygıtlarınızın ayarlarını yapılandırın.
+Exec=xp-ses
+Icon=preferences-desktop-sound
+NoDisplay=true
+Categories=Settings;AudioVideo;

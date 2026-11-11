@@ -54,6 +54,7 @@ var ESLEME = [
     ["orca.desktop", "Ekran Okuyucusu", "don/Erişilebilirlik"],
     ["org.kde.kwave.desktop", "Ses Kaydedicisi", "don/Eğlence"],
     ["audacity.desktop", "Ses Kaydedicisi", "don/Eğlence"],
+    ["xp-sesdenetimi.desktop", "Ses Denetimi", "don/Eğlence"],
     ["org.pulseaudio.pavucontrol.desktop", "Ses Denetimi", "don/Eğlence"],
     ["org.kde.krdc.desktop", "Uzak Masaüstü Bağlantısı", "don/İletişim"],
     ["org.remmina.Remmina.desktop", "Uzak Masaüstü Bağlantısı", "don/İletişim"],

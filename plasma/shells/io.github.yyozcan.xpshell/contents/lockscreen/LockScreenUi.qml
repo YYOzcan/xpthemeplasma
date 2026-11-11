@@ -53,7 +53,7 @@ Rectangle {
             // parolasız hesap: XP oku doğrudan açardı
         }
         ui.balon = "";
-        if (authenticator.pamTimeout) {
+        if (authenticator.pamTimeout === true) {
             ui.pendingPassword = parola.text;
             parola.enabled = false;
         } else {
@@ -68,6 +68,7 @@ Rectangle {
 
     Connections {
         target: authenticator
+        ignoreUnknownSignals: true          // pamTimeout her Plasma sürümünde yok
         function onFailed(kind) {
             if (kind != 0) return;                     // parolasız yöntemlerden gelen
             parola.text = "";
@@ -479,7 +480,7 @@ Rectangle {
     Loader {
         z: 30
         active: root.viewVisible
-        source: "LockOsd.qml"
+        source: "file:///usr/share/plasma/shells/org.kde.plasma.desktop/contents/lockscreen/LockOsd.qml"
         anchors { horizontalCenter: parent.horizontalCenter; bottom: parent.bottom; bottomMargin: 20 }
     }
 

@@ -47,6 +47,8 @@ inline QStringList xpKomutu(const QString &komut) {
         if (!a.isEmpty()) return a;
     }
     if (k == "msconfig" || k == "msconfig.exe") return kcm("kcm_autostart");
+    if (k == "mmsys.cpl" || k == "control mmsys.cpl") { const QStringList a = bin("xp-ses"); if (!a.isEmpty()) return a; }
+    if (k == "sndvol32" || k == "sndvol32.exe" || k == "sndvol") { const QStringList a = bin("xp-sesdenetimi"); if (!a.isEmpty()) return a; }
     if (k == "regedit" || k == "regedit.exe" || k == "regedt32") return wine("regedit.exe");
     if (k == "iexplore" || k == "iexplore.exe") return {"xdg-open", "about:blank"};
     if (k == "wmplayer" || k == "wmplayer.exe" || k == "mplayer2") {

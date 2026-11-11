@@ -81,7 +81,8 @@ public:
                     b->setAutoDefault(false);
                     // yazı tipi ölçüleri XP'ninkinden birkaç piksel genişse metin kırpılmasın
                     const int gerek = b->fontMetrics().horizontalAdvance(sade(t)) + 20;
-                    if (gerek > r.width()) r.setWidth(gerek);
+                    if (st & 0xC0) b->setText(QString());           // BS_ICON / BS_BITMAP: metin değil resim
+                    else if (gerek > r.width()) r.setWidth(gerek);
                     w = b;
                 } else if (tur == 2 || tur == 3 || tur == 5 || tur == 6) {
                     auto *b = new QCheckBox(t, this);

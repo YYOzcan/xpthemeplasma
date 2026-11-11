@@ -1,0 +1,46 @@
+#!/bin/sh
+# XPThemePlasma — kendi kendine bakım (XP oturumu açılırken xpthemeplasma.sh çağırır)
+# Qt / KDE Frameworks / Plasma / libtaskmanager sürümleri kurulumdan beri değiştiyse kurulumu arka planda
+# "güncelle" kipinde yeniden çalıştırır: XP programları yeni kitaplıklarla derlenir, Plasma'ya bağlı
+# dosyalar (kabuk yapılandırması, çeviri katmanı, gizlenen KDE girdileri) kurulu sürümden yeniden üretilir.
+#   xp-bakim            gerekiyorsa arka planda güncelle
+#   xp-bakim --parmak   parmak izini yaz
+#   xp-bakim --zorla    şimdi güncelle (ön planda)
+DURUM="${XDG_STATE_HOME:-$HOME/.local/state}/xpthemeplasma"
+
+parmak() {
+    for k in /usr/lib/libQt6Core.so.6 /usr/lib/libQt6Qml.so.6 /usr/lib/libKF6CoreAddons.so.6 /usr/lib/libPlasma.so.6 \
+             /usr/lib/libPlasmaQuick.so.6 /usr/lib/libtaskmanager.so.6 /usr/lib/libKF6IdleTime.so.6 /usr/lib/libkworkspace6.so.6; do
+        [ -e "$k" ] && readlink -f "$k"
+    done
+    for m in /usr/share/locale/tr/LC_MESSAGES/plasma_applet_org.kde.desktopcontainment.mo /usr/share/locale/tr/LC_MESSAGES/kio6.mo \
+             /usr/share/plasma/shells/org.kde.plasma.desktop/contents/configuration/ContainmentConfiguration.qml \
+             /usr/share/plasma/shells/org.kde.plasma.desktop/metadata.json; do
+        [ -e "$m" ] && stat -c '%n %Y' "$m"
+    done
+}
+
+case "${1:-}" in
+    --parmak) parmak | md5sum | cut -d' ' -f1; exit 0 ;;
+esac
+kaynak=$(cat "$DURUM/kaynak" 2>/dev/null)
+[ -f "$kaynak/kur.sh" ] || exit 0
+simdi=$(parmak | md5sum | cut -d' ' -f1)
+if [ "${1:-}" != "--zorla" ] && [ "$simdi" = "$(cat "$DURUM/parmak" 2>/dev/null)" ]; then
+    exit 0
+fi
+calistir() {
+    if bash "$kaynak/kur.sh" --guncelle >"$DURUM/bakim.log" 2>&1; then
+        command -v notify-send >/dev/null && notify-send -a "XPThemePlasma" -i system-software-update \
+            "XPThemePlasma" "KDE güncellemesine uyarlandı. Değişiklikler bir sonraki girişte tamamen geçerli olur."
+    else
+        command -v notify-send >/dev/null && notify-send -a "XPThemePlasma" -i dialog-warning \
+            "XPThemePlasma" "KDE güncellemesine uyarlanamadı: $DURUM/bakim.log"
+    fi
+}
+if [ "${1:-}" = "--zorla" ]; then
+    calistir
+else
+    mkdir -p "$DURUM"
+    ( sleep 20; calistir ) >/dev/null 2>&1 &
+fi

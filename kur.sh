@@ -10,6 +10,10 @@ set -euo pipefail
 
 KOK="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$KOK"
+# --guncelle: KDE/Qt güncellemesinden sonra (xp-bakim çağırır): görseller zaten üretilmişse yeniden
+# üretilmez; programlar derlenir, Plasma'ya bağlı dosyalar kurulu sürümden yeniden oluşturulur
+GUNCELLE=0
+[[ "${1:-}" == "--guncelle" ]] && GUNCELLE=1
 
 if [[ "${1:-}" == "--sddm-xp" ]]; then
     [[ $EUID -eq 0 ]] || { echo "sudo bash $0 --sddm-xp" >&2; exit 1; }
@@ -96,10 +100,10 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$DATA/color-schemes/XPLuna.colors" "$DATA/wallpapers/XPThemePlasma" "$DATA"/wallpapers/XP-* \
            "$DATA/locale/tr/LC_MESSAGES/plasma_applet_io.github.yyozcan.xpstart.mo" \
            "$DATA/locale/tr/LC_MESSAGES/xpthemeplasma.mo" \
-           "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$BIN/xp-giris-sesi" "$DATA/xpthemeplasma" \
+           "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$BIN/xp-giris-sesi" "$BIN/xp-bakim" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
            "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
-           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN"/xp-notdefteri "$BIN"/xp-gezgin "$BIN"/xp-denetim "$BIN"/xp-calistir "$BIN"/xp-sistem "$BIN"/xp-tarihsaat "$BIN"/xp-gorunum "$BIN"/xp-hakkinda "$BIN"/xp-gorev "$BIN"/xp-ag "$BIN"/xp-programlar "$BIN"/xp-ekrankoruyucu "$BIN"/xp-wine
+           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN"/xp-notdefteri "$BIN"/xp-gezgin "$BIN"/xp-denetim "$BIN"/xp-calistir "$BIN"/xp-sistem "$BIN"/xp-tarihsaat "$BIN"/xp-gorunum "$BIN"/xp-hakkinda "$BIN"/xp-gorev "$BIN"/xp-ag "$BIN"/xp-programlar "$BIN"/xp-ses "$BIN"/xp-sesdenetimi "$BIN"/xp-ekrankoruyucu "$BIN"/xp-wine
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -115,6 +119,9 @@ if [[ "${1:-}" == "--xp" ]]; then
     $PY tools/xp_iceaktar.py "$2"
 fi
 
+if [[ $GUNCELLE == 1 && -d build/aurorae && -d build/kvantum && -d build/desktoptheme ]]; then
+    echo "==> Güncelleme kipi: görseller yeniden üretilmiyor"
+else
 rm -rf build/aurorae build/kvantum build/desktoptheme build/varlik build/varlik-* build/color-schemes
 if [[ -f "$XPD/stil/luna.msstyles" ]]; then
     echo "==> Görseller gerçek XP varlıklarından üretiliyor ($XPD)"
@@ -140,6 +147,7 @@ else
     $PY tools/gen_aurorae.py build/aurorae
     $PY tools/gen_kvantum.py build/kvantum
     $PY tools/gen_desktoptheme.py build/desktoptheme
+fi
 fi
 [[ -f build/wallpapers/XPThemePlasma/metadata.json ]] || $PY tools/gen_wallpaper.py build/wallpapers/XPThemePlasma
 
@@ -178,6 +186,8 @@ done
 kopyala kwin/tabbox/xp_alttab "$DATA/kwin/tabbox/xp_alttab"
 kopyala kwin/effects/xp_gri "$DATA/kwin/effects/xp_gri"
 kopyala plasma/shells/io.github.yyozcan.xpshell "$DATA/plasma/shells/io.github.yyozcan.xpshell"
+# kabuk yalnızca XP'ye özgü dosyaları taşır; geri kalanı Plasma'nın kendi kabuğundan gelir
+$PY tools/xp_kabuk.py "$DATA/plasma/shells/io.github.yyozcan.xpshell"
 kopyala plasma/layout-templates/io.github.yyozcan.xptaskbar "$DATA/plasma/layout-templates/io.github.yyozcan.xptaskbar"
 kopyala plasma/look-and-feel/io.github.yyozcan.xpluna "$DATA/plasma/look-and-feel/io.github.yyozcan.xpluna"
 # gerçek XP kipinde varsayılan duvar kağıdı XP'deki gibi Bliss
@@ -219,7 +229,8 @@ if command -v g++ >/dev/null && pkg-config --exists Qt6Widgets Qt6PrintSupport; 
     UYG=("notdefteri:xp-notdefteri:Qt6Widgets Qt6PrintSupport:" "gezgin:xp-gezgin:Qt6Widgets:"
          "denetim:xp-denetim:Qt6Widgets:" "calistir:xp-calistir:Qt6Widgets:" "sistem:xp-sistem:Qt6Widgets:"
          "tarihsaat:xp-tarihsaat:Qt6Widgets:" "gorunum:xp-gorunum:Qt6Widgets:" "hakkinda:xp-hakkinda:Qt6Widgets:"
-         "ag:xp-ag:Qt6Widgets:" "programlar:xp-programlar:Qt6Widgets:")
+         "ag:xp-ag:Qt6Widgets:" "programlar:xp-programlar:Qt6Widgets:" "ses:xp-ses:Qt6Widgets:"
+         "sesdenetimi:xp-sesdenetimi:Qt6Widgets:")
     [[ -f /usr/include/taskmanager/tasksmodel.h ]] && UYG+=("gorev:xp-gorev:Qt6Widgets Qt6Network Qt6Qml:-ltaskmanager")
     [[ -f /usr/include/KF6/KIdleTime/kidletime.h ]] && UYG+=("ekrankoruyucu:xp-ekrankoruyucu:Qt6Gui Qt6DBus:-I/usr/include/KF6/KIdleTime -lKF6IdleTime")
     for app in "${UYG[@]}"; do
@@ -344,10 +355,18 @@ echo "==> Oturum yardımcıları"
 install -Dm755 session/xp-profil "$BIN/xp-profil"
 install -Dm755 session/xp-oturum "$BIN/xp-oturum"
 install -Dm755 session/xp-giris-sesi "$BIN/xp-giris-sesi"
+install -Dm755 session/xp-bakim "$BIN/xp-bakim"
 install -Dm644 session/xpthemeplasma-env.sh "$CFG/plasma-workspace/env/xpthemeplasma.sh"
 
 # Plasma'nın paket önbelleğini tazele
 rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}"/plasma_theme_XP-Luna* 2>/dev/null || true
+
+# kendi kendine bakım: kaynağın yeri ve kurulan KDE/Qt sürümlerinin parmak izi
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/xpthemeplasma"
+mkdir -p "$STATE"
+echo "$KOK" > "$STATE/kaynak"
+"$BIN/xp-bakim" --parmak > "$STATE/parmak"
+[[ $GUNCELLE == 1 ]] && { echo "Güncelleme tamam."; exit 0; }
 
 echo
 echo "Kullanıcı kurulumu tamam."

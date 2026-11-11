@@ -53,6 +53,61 @@ protected:
     }
 };
 
+struct Kip { QString id; QSize boyut; double hz = 0; };
+struct Ekran {
+    QString ad, simdiki;
+    double olcek = 1.0;
+    QList<Kip> kipler;
+    Kip kip(const QString &id) const { for (const Kip &k : kipler) if (k.id == id) return k; return {}; }
+    // bu boyutta: şimdiki yenileme hızına en yakın, yoksa en yüksek
+    Kip enIyi(const QSize &b) const {
+        const double hedef = kip(simdiki).hz;
+        Kip en;
+        for (const Kip &k : kipler)
+            if (k.boyut == b && (en.id.isEmpty() || qAbs(k.hz - hedef) < qAbs(en.hz - hedef))) en = k;
+        return en;
+    }
+};
+static Ekran ekranOku() {
+    Ekran e;
+    const QJsonObject kok = QJsonDocument::fromJson(komutCikti("kscreen-doctor", {"-j"}).toUtf8()).object();
+    QJsonObject sec;
+    for (const QJsonValue &v : kok.value("outputs").toArray()) {
+        const QJsonObject o = v.toObject();
+        if (!o.value("enabled").toBool() || !o.value("connected").toBool(true)) continue;
+        if (sec.isEmpty() || o.value("priority").toInt(99) < sec.value("priority").toInt(99)) sec = o;
+    }
+    if (sec.isEmpty()) return e;
+    e.ad = sec.value("name").toString();
+    e.simdiki = sec.value("currentModeId").toVariant().toString();
+    e.olcek = sec.value("scale").toDouble(1.0);
+    for (const QJsonValue &v : sec.value("modes").toArray()) {
+        const QJsonObject m = v.toObject();
+        const QJsonObject b = m.value("size").toObject();
+        e.kipler << Kip{m.value("id").toVariant().toString(), QSize(b.value("width").toInt(), b.value("height").toInt()),
+                        m.value("refreshRate").toDouble()};
+    }
+    return e;
+}
+// XP "Monitör Ayarları": 15 saniye içinde Evet'e basılmazsa eski ayarlara dönülür
+static bool onayla(const xp::Modul &tu, QWidget *ebeveyn) {
+    xp::Iletisim d(tu, 1011, ebeveyn);
+    d.setWindowTitle(tu.dialog(1011).value("title").toString());
+    if (auto *ik = d.sayfa->k<QLabel>(1830)) ik->setPixmap(QApplication::style()->standardIcon(QStyle::SP_MessageBoxQuestion).pixmap(32, 32));
+    auto *evet = d.sayfa->k<QPushButton>(6), *hayir = d.sayfa->k<QPushButton>(7);
+    QObject::connect(evet, &QPushButton::clicked, &d, &QDialog::accept);
+    QObject::connect(hayir, &QPushButton::clicked, &d, &QDialog::reject);
+    auto *sayac = d.sayfa->k<QLabel>(1831);
+    int kalan = 15;
+    auto yaz = [&] { QString m = tu.dize(2640, "%d saniyede eski durumunda"); if (sayac) sayac->setText(m.replace("%d", QString::number(kalan))); };
+    yaz();
+    QTimer t;
+    QObject::connect(&t, &QTimer::timeout, &d, [&] { if (--kalan <= 0) d.reject(); else yaz(); });
+    t.start(1000);
+    hayir->setDefault(true);
+    return d.exec() == QDialog::Accepted;
+}
+
 struct Duvar { QString ad, yol; };
 
 static QList<Duvar> duvarKagitlari() {
@@ -368,43 +423,83 @@ int main(int argc, char **argv) {
         l->setFrameShape(QFrame::Panel);
         l->setFrameShadow(QFrame::Sunken);
     }
-    // kscreen-doctor: birincil çıkışın kipleri
-    QString cikti, kipler;
-    const QString kd = komutCikti("kscreen-doctor", {"-o"}).remove(QRegularExpression("\\x1b\\[[0-9;]*m"));
+    // kscreen-doctor -j: birincil çıkış, kipleri (kimlik, boyut, yenileme hızı) ve ölçek
+    Ekran ekran = ekranOku();
     QList<QSize> boyutlar;
-    QSize simdiki;
-    for (const QString &s : kd.split('\n')) {
-        if (s.startsWith("Output:") && cikti.isEmpty()) cikti = s.section(' ', 2, 2);
-        if (s.trimmed().startsWith("Modes:") && kipler.isEmpty()) kipler = s;
-        if (s.trimmed().startsWith("Geometry:") && !simdiki.isValid()) {
-            const QString g = s.section(' ', -1);
-            simdiki = QSize(g.section('x', 0, 0).toInt(), g.section('x', 1).toInt());
-        }
-    }
-    static const QRegularExpression kipRe("\\d+:(\\d+)x(\\d+)@");
-    for (auto it = kipRe.globalMatch(kipler); it.hasNext();) {
-        const auto m = it.next();
-        const QSize s(m.captured(1).toInt(), m.captured(2).toInt());
-        if (!boyutlar.contains(s) && s.width() >= 800) boyutlar << s;
-    }
+    for (const Kip &k : ekran.kipler) if (!boyutlar.contains(k.boyut) && k.boyut.width() >= 800) boyutlar << k.boyut;
     std::sort(boyutlar.begin(), boyutlar.end(), [](const QSize &a, const QSize &b) {
         return qint64(a.width()) * a.height() < qint64(b.width()) * b.height();
     });
+    const Kip simdikiKip = ekran.kip(ekran.simdiki);
     auto *kaydirici = ay->k<QSlider>(1808);
     auto *cozunurluk = ay->k<QLabel>(1814);
     kaydirici->setRange(0, qMax(0, int(boyutlar.size()) - 1));
     kaydirici->setPageStep(1);
     kaydirici->setTickPosition(QSlider::TicksBelow);
-    kaydirici->setValue(qMax(0, int(boyutlar.indexOf(simdiki))));
+    kaydirici->setValue(qMax(0, int(boyutlar.indexOf(simdikiKip.boyut))));
+    kaydirici->setEnabled(!ekran.ad.isEmpty());
     auto cozGoster = [&] {
-        const QSize s = boyutlar.value(kaydirici->value(), simdiki);
-        cozunurluk->setText(QString("%1 x %2 piksel").arg(s.width()).arg(s.height()));
+        const QSize s = boyutlar.value(kaydirici->value(), simdikiKip.boyut);
+        QString m = tu.dize(2661, "%d x %d piksel");
+        cozunurluk->setText(m.replace(m.indexOf("%d"), 2, QString::number(s.width())).replace("%d", QString::number(s.height())));
     };
     cozGoster();
     QObject::connect(kaydirici, &QSlider::valueChanged, &d, [&] { cozGoster(); d.degisti(); });
     if (auto *b = ay->k<QPushButton>(1821)) b->setEnabled(false);
+    QString gelismisKip;                       // Gelişmiş > Monitör'de seçilen yenileme hızı
+    double gelismisOlcek = ekran.olcek;
     if (auto *b = ay->k<QPushButton>(1802))
-        QObject::connect(b, &QPushButton::clicked, [] { QProcess::startDetached("kcmshell6", {"kcm_kscreen"}); });
+        QObject::connect(b, &QPushButton::clicked, &d, [&] {
+            const QSize boy = boyutlar.value(kaydirici->value(), simdikiKip.boyut);
+            QString kart = ay->k<QLabel>(1811) ? ay->k<QLabel>(1811)->text() : QString("Plug and Play Monitor");
+            xp::Ozellikler g(kart + " Özellikleri", &d);
+            // Genel: DPI (Plasma ölçeği)
+            xp::Sayfa *gn = g.ekle(tu, 1010);
+            auto *dpi = gn->k<QComboBox>(1833);
+            dpi->addItem(tu.dize(2045, "Normal boyut (96 DPI)"), 1.0);
+            dpi->addItem(tu.dize(2046, "Büyük boyut (120 DPI)"), 1.25);
+            for (double o : {1.5, 1.75, 2.0}) dpi->addItem(QString("Özel ayar (%1 DPI)").arg(qRound(96 * o)), o);
+            int di = dpi->findData(gelismisOlcek);
+            if (di < 0) { dpi->addItem(QString("Özel ayar (%1 DPI)").arg(qRound(96 * gelismisOlcek)), gelismisOlcek); di = dpi->count() - 1; }
+            dpi->setCurrentIndex(di);
+            for (int id : {1837, 1836, 1838, 1839, 1840, 1848}) if (auto *w = gn->k(id)) w->hide();
+            g.izle(gn);
+            // Monitör: yenileme hızı
+            auto *mon = new QWidget;
+            auto *ml = new QVBoxLayout(mon);
+            ml->setContentsMargins(xp::dluX(7), xp::dluY(7), xp::dluX(7), xp::dluY(7));
+            auto *tur = new QGroupBox("Monitör türü");
+            auto *tl = new QHBoxLayout(tur);
+            auto *ti = new QLabel;
+            ti->setPixmap(QIcon::fromTheme("video-display").pixmap(32, 32));
+            tl->addWidget(ti);
+            tl->addWidget(new QLabel("Plug and Play Monitor"), 1);
+            ml->addWidget(tur);
+            auto *ayar = new QGroupBox("Monitör ayarları");
+            auto *al = new QVBoxLayout(ayar);
+            al->addWidget(new QLabel("&Ekran yenileme hızı:"));
+            auto *hz = new QComboBox;
+            for (const Kip &k : ekran.kipler)
+                if (k.boyut == boy) hz->addItem(QString("%1 %2").arg(qRound(k.hz)).arg(dsk.dize(3156, "Hertz")), k.id);
+            const QString seciliHz = gelismisKip.isEmpty() ? (boy == simdikiKip.boyut ? simdikiKip.id : ekran.enIyi(boy).id) : gelismisKip;
+            hz->setCurrentIndex(qMax(0, hz->findData(seciliHz)));
+            al->addWidget(hz);
+            auto *gizle = new QCheckBox("Bu monitörün &görüntüleyemediği modları gizle");
+            gizle->setChecked(true);
+            gizle->setEnabled(false);
+            al->addWidget(gizle);
+            ml->addWidget(ayar);
+            ml->addStretch();
+            g.sekmeler->addTab(mon, "Monitör");
+            QObject::connect(hz, &QComboBox::activated, &g, &xp::Ozellikler::degisti);
+            g.uygulaIslevi = [&] {
+                gelismisKip = hz->currentData().toString();
+                gelismisOlcek = dpi->currentData().toDouble();
+                d.degisti();
+                return true;
+            };
+            g.exec();
+        });
 
     // ------------------------------------------------------------ Uygula
     d.uygulaIslevi = [&] {
@@ -474,16 +569,25 @@ int main(int argc, char **argv) {
             // görev çubuğu ve Başlat menüsü yeni görselleri yüklesin
             QProcess::startDetached("systemctl", {"--user", "restart", "plasma-plasmashell"});
         }
-        // çözünürlük
-        const QSize s = boyutlar.value(kaydirici->value());
-        if (s.isValid() && s != simdiki && !cikti.isEmpty()) {
-            QProcess::execute("kscreen-doctor", {QString("output.%1.mode.%2x%3").arg(cikti).arg(s.width()).arg(s.height())});
-            if (QMessageBox::question(&d, "Monitör Ayarları", "Masaüstünüz yeniden yapılandırıldı. Bu ayarları korumak istiyor musunuz?",
-                                      QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
-                QProcess::execute("kscreen-doctor", {QString("output.%1.mode.%2x%3").arg(cikti).arg(simdiki.width()).arg(simdiki.height())});
-                kaydirici->setValue(qMax(0, int(boyutlar.indexOf(simdiki))));
-            } else {
-                simdiki = s;
+        // çözünürlük / yenileme hızı / DPI — XP gibi 15 saniyelik onayla
+        if (!ekran.ad.isEmpty()) {
+            const QSize boy = boyutlar.value(kaydirici->value(), simdikiKip.boyut);
+            QString yeniKip = gelismisKip;
+            if (yeniKip.isEmpty() || ekran.kip(yeniKip).boyut != boy) yeniKip = boy == simdikiKip.boyut ? ekran.simdiki : ekran.enIyi(boy).id;
+            const bool kipDegisti = yeniKip != ekran.simdiki, olcekDegisti = qAbs(gelismisOlcek - ekran.olcek) > 0.01;
+            if (kipDegisti || olcekDegisti) {
+                QStringList ileri, geri;
+                if (kipDegisti) { ileri << "output." + ekran.ad + ".mode." + yeniKip; geri << "output." + ekran.ad + ".mode." + ekran.simdiki; }
+                if (olcekDegisti) { ileri << "output." + ekran.ad + ".scale." + QString::number(gelismisOlcek); geri << "output." + ekran.ad + ".scale." + QString::number(ekran.olcek); }
+                QProcess::execute("kscreen-doctor", ileri);
+                if (onayla(tu, &d)) {
+                    ekran = ekranOku();
+                } else {
+                    QProcess::execute("kscreen-doctor", geri);
+                    kaydirici->setValue(qMax(0, int(boyutlar.indexOf(simdikiKip.boyut))));
+                }
+                gelismisKip.clear();
+                gelismisOlcek = ekran.olcek;
             }
         }
         temaKutu->setCurrentIndex(1);
