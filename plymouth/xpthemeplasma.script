@@ -1,45 +1,128 @@
-# XPThemePlasma — Windows XP açılış ekranı
-Window.SetBackgroundTopColor(0, 0, 0);
-Window.SetBackgroundBottomColor(0, 0, 0);
+# XPThemePlasma — Windows XP açılış ve kapanış ekranları (Plymouth betik eklentisi)
+#
+# Açılış  : siyah zemin, XP logosu, kayan üç mavi blok (ntoskrnl.exe bitmap'leri)
+# Kapanış : logonui düzeni — lacivert üst/alt bantlar, parıltı, ayraç, logo ve
+#           "Windows kapatılıyor..." (XP yeniden başlatırken de aynı yazıyı gösterirdi)
+#
+# Ekran, açılışta önce simpledrm (UEFI çerçeve arabelleği) üzerinde çizilir; NVIDIA/AMD
+# sürücüsü yüklenince Plymouth yeni ekrana geçer. Çözünürlük değişebileceği için yerleşim
+# her karede denetlenir ve gerekirse yeniden hesaplanır.
 
-W = Window.GetWidth();
-H = Window.GetHeight();
-k = Math.Min(W / 640, H / 480);         # 4:3 korunur, yanlar siyah
-ox = Math.Int((W - 640 * k) / 2);
-oy = Math.Int((H - 480 * k) / 2);
+mod = Plymouth.GetMode();
+global.kapanis = (mod == "shutdown" || mod == "reboot");
 
-ekran = Sprite(Image("boot.png").Scale(Math.Int(640 * k), Math.Int(480 * k)));
-ekran.SetX(ox);
-ekran.SetY(oy);
-ekran.SetZ(0);
+global.W = 0;
+global.H = 0;
 
-for (i = 0; i < 19; i++) {
-    ad = "kare-" + (i < 10 ? "0" : "") + i + ".png";
-    kare[i] = Image(ad).Scale(Math.Int(120 * k), Math.Int(9 * k));
+# ------------------------------------------------------------------ açılış
+fun acilis_kur() {
+    global.k = Math.Min(Window.GetWidth() / 640, Window.GetHeight() / 480);
+    global.ox = Math.Int((Window.GetWidth() - 640 * global.k) / 2);
+    global.oy = Math.Int((Window.GetHeight() - 480 * global.k) / 2);
+
+    global.ekran = Sprite(global.boot_img.Scale(Math.Int(640 * global.k), Math.Int(480 * global.k)));
+    global.ekran.SetX(global.ox);
+    global.ekran.SetY(global.oy);
+    global.ekran.SetZ(0);
+
+    for (i = 0; i < 19; i++)
+        global.kare[i] = global.kare_img[i].Scale(Math.Int(120 * global.k), Math.Int(9 * global.k));
+    global.bar = Sprite(global.kare[global.adim]);
+    global.bar.SetX(global.ox + Math.Int(258 * global.k));
+    global.bar.SetY(global.oy + Math.Int(354 * global.k));
+    global.bar.SetZ(1);
 }
-bar = Sprite(kare[0]);
-bar.SetX(ox + Math.Int(258 * k));
-bar.SetY(oy + Math.Int(354 * k));
-bar.SetZ(1);
 
-sayac = 0;
-adim = 0;
+# ------------------------------------------------------------------ kapanış
+fun kapanis_kur() {
+    w = Window.GetWidth();
+    h = Window.GetHeight();
+    s = h / 768;                                  # logonui 1024x768'de tasarlandı
+    ust_h = Math.Int(80 * s);
+    alt_h = Math.Int(88 * s);
+    orta_h = h - ust_h - alt_h;
+
+    global.ust = Sprite(global.ust_img.Scale(w, ust_h));
+    global.ust.SetX(0);
+    global.ust.SetY(0);
+    global.ust.SetZ(1);
+
+    global.alt = Sprite(global.alt_img.Scale(w, alt_h));
+    global.alt.SetX(0);
+    global.alt.SetY(h - alt_h);
+    global.alt.SetZ(1);
+
+    global.parilti = Sprite(global.parilti_img.Scale(Math.Int(219 * s), Math.Int(207 * s)));
+    global.parilti.SetX(0);
+    global.parilti.SetY(ust_h);
+    global.parilti.SetZ(2);
+
+    ayrac_h = Math.Int(orta_h * 0.82);
+    global.ayrac = Sprite(global.ayrac_img.Scale(Math.Max(1, Math.Int(s)), ayrac_h));
+    global.ayrac.SetX(Math.Int(w / 2));
+    global.ayrac.SetY(ust_h + Math.Int((orta_h - ayrac_h) / 2));
+    global.ayrac.SetZ(2);
+
+    # durum.png 2x çizildi: sağ kenarı ayraca dayanır, logonun altı orta çizgiye yakın
+    dw = Math.Int(global.durum_img.GetWidth() * s / 2);
+    dh = Math.Int(global.durum_img.GetHeight() * s / 2);
+    global.durum = Sprite(global.durum_img.Scale(dw, dh));
+    global.durum.SetX(Math.Int(w / 2) - dw);
+    global.durum.SetY(ust_h + Math.Int(orta_h / 2) - Math.Int(106 * s));
+    global.durum.SetZ(3);
+}
+
+fun yerlestir() {
+    global.W = Window.GetWidth();
+    global.H = Window.GetHeight();
+    if (global.kapanis)
+        kapanis_kur();
+    else
+        acilis_kur();
+}
+
+if (global.kapanis) {
+    Window.SetBackgroundTopColor(0.353, 0.494, 0.863);      # rgb(90,126,220)
+    Window.SetBackgroundBottomColor(0.353, 0.494, 0.863);
+    global.ust_img = Image("kapat-ust.png");
+    global.alt_img = Image("kapat-alt.png");
+    global.parilti_img = Image("kapat-parilti.png");
+    global.ayrac_img = Image("kapat-ayrac.png");
+    global.durum_img = Image("kapat-durum.png");
+} else {
+    Window.SetBackgroundTopColor(0, 0, 0);
+    Window.SetBackgroundBottomColor(0, 0, 0);
+    global.boot_img = Image("boot.png");
+    for (i = 0; i < 19; i++) {
+        if (i < 10) ad = "kare-0" + i + ".png";
+        else ad = "kare-" + i + ".png";
+        global.kare_img[i] = Image(ad);
+    }
+    global.adim = 0;
+}
+global.sayac = 0;
+yerlestir();
+
 fun guncelle() {
-    sayac++;
-    if (sayac % 3 == 0) {               # ~50 ms'de bir 8 piksel (XP hızı)
-        adim = (adim + 1) % 19;
-        bar.SetImage(kare[adim]);
+    if (Window.GetWidth() != global.W || Window.GetHeight() != global.H)
+        yerlestir();
+    if (!global.kapanis) {
+        global.sayac++;
+        if (global.sayac % 3 == 0) {            # ~50 ms'de bir 8 piksel (XP hızı)
+            global.adim = (global.adim + 1) % 19;
+            global.bar.SetImage(global.kare[global.adim]);
+        }
     }
 }
 Plymouth.SetRefreshFunction(guncelle);
 
-# --- parola (şifreli disk varsa) ---
+# ------------------------------------------------------------------ parola (şifreli disk)
 fun parola(istem, madde) {
     yildiz = "";
     for (j = 0; j < madde; j++) yildiz += "*";
     global.p_sprite = Sprite(Image.Text(istem + " " + yildiz, 1, 1, 1));
-    global.p_sprite.SetX(Math.Int(W / 2 - 150));
-    global.p_sprite.SetY(Math.Int(oy + 400 * k));
+    global.p_sprite.SetX(Math.Int(Window.GetWidth() / 2 - 150));
+    global.p_sprite.SetY(Math.Int(Window.GetHeight() * 0.85));
     global.p_sprite.SetZ(10);
 }
 Plymouth.SetDisplayPasswordFunction(parola);
@@ -52,7 +135,7 @@ Plymouth.SetDisplayNormalFunction(normal);
 fun ileti(metin) {
     global.m_sprite = Sprite(Image.Text(metin, 0.7, 0.7, 0.7));
     global.m_sprite.SetX(10);
-    global.m_sprite.SetY(H - 20);
+    global.m_sprite.SetY(Window.GetHeight() - 20);
     global.m_sprite.SetZ(10);
 }
 Plymouth.SetMessageFunction(ileti);

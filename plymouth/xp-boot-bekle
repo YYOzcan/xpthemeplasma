@@ -1,6 +1,13 @@
 #!/bin/sh
-# XPThemePlasma: açılıştan bu yana SURE saniye dolmadıysa kalanını bekle (XP yükleme barı görünsün)
+# XPThemePlasma: XP açılış ekranı (Plymouth) en az SURE saniye görünsün.
+# Süre, plymouthd'nin başladığı andan sayılır (initramfs'te başlar, kök değişiminde aynı süreç sürer).
 SURE=${1:-10}
-gecen=$(cut -d. -f1 /proc/uptime)
-[ "$gecen" -lt "$SURE" ] && sleep $((SURE - gecen))
+pid=$(cat /run/plymouth/pid 2>/dev/null)
+[ -n "$pid" ] && [ -r "/proc/$pid/stat" ] || exit 0
+hz=$(getconf CLK_TCK 2>/dev/null || echo 100)
+# /proc/PID/stat 22. alan: açılıştan bu yana başlama zamanı (tik); komut adı boşluk içerebilir
+basla=$(sed 's/^.*) //' "/proc/$pid/stat" | cut -d' ' -f20)
+simdi=$(cut -d' ' -f1 /proc/uptime)
+kalan=$(awk -v b="$basla" -v hz="$hz" -v s="$simdi" -v t="$SURE" 'BEGIN { k = t - (s - b / hz); if (k > 0) printf "%.1f", k; else print 0 }')
+[ "$kalan" != "0" ] && sleep "$kalan"
 exit 0

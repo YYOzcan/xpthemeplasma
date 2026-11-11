@@ -50,16 +50,15 @@ YONETILEN = {
                     "slidingpopupsEnabled": "false", "morphingpopupsEnabled": "false",
                     "windowapertureEnabled": "false", "fadedesktopEnabled": "false",
                     "slideEnabled": "false", "dimscreenEnabled": "false",
-                    "kwin4_effect_geometry_changeEnabled": "false"},
+                    "kwin4_effect_geometry_changeEnabled": "false",
+                    # Bilgisayarı Kapat açıkken masaüstü griye döner (kwin/effects/xp_gri)
+                    "xp_griEnabled": "true"},
         "TabBox": {"LayoutName": "xp_alttab", "HighlightWindows": "false", "ShowDesktopMode": "0"},
     },
     "plasmarc": {"Theme": {"name": "XP-Luna"}},
     "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},
     "Kvantum/kvantum.kvconfig": {"General": {"theme": "XPLuna"}},
     "konsolerc": {"Desktop Entry": {"DefaultProfile": "XP Komut İstemi.profile"}},
-    # XP: oturum açılışında "Windows XP Başlangıç", kapanışta "Windows XP Kapanış" sesi
-    "plasma_workspace.notifyrc": {"Event/startkde": {"Action": "Sound"},
-                                  "Event/exitkde": {"Action": "Sound"}},
     "mimeapps.list": {"Default Applications": {"text/plain": "xp-notdefteri.desktop",
                                                "inode/directory": "xp-gezgin.desktop"}},
 }

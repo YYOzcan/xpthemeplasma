@@ -1,6 +1,13 @@
 /*
     XPThemePlasma — XP "Hoş Geldiniz" ekranı (oturum açıldıktan sonra masaüstü yüklenirken)
-    Gerçek XP kipinde logonui.exe bitmap'leri, yoksa aynı düzen çizilerek gösterilir.
+
+    Düzen logonui.exe'nin UIFILE kaynağından (1024x768 için, rp = piksel):
+      üst panel 80 rp, rgb(0,48,156) + alt kenarda açık çizgi (bitmap 125)
+      alt panel rgb(57,52,173) → rgb(0,48,156) yatay degrade + üstte turuncu çizgi (bitmap 126)
+      orta rgb(90,126,220), sol üstte parıltı (bitmap 100), ortada ayraç (bitmap 124)
+      "Hoş Geldiniz": Arial 36 pt kalın italik, rgb(239,247,255), ayracın 22 rp soluna sağa yaslı;
+      gölgesi rgb(49,81,181), 2 rp sağa 3 rp aşağı
+    Gerçek XP kipinde logonui bitmap'leri, yoksa aynı düzen çizilerek gösterilir.
     SPDX-License-Identifier: GPL-3.0-or-later
 */
 import QtQuick
@@ -14,6 +21,7 @@ Rectangle {
 
     readonly property string varlik: StandardPaths.writableLocation(StandardPaths.GenericDataLocation) + "/xpthemeplasma/varlik/"
     readonly property bool gercek: probe.status === Image.Ready
+    readonly property real s: height / 768
     Image { id: probe; visible: false; source: root.varlik + "logon-topline.png" }
 
     onStageChanged: {
@@ -26,7 +34,7 @@ Rectangle {
     Rectangle {
         id: topBand
         anchors { left: parent.left; right: parent.right; top: parent.top }
-        height: Math.round(root.height * 0.11)
+        height: Math.round(80 * root.s)
         color: "#00309C"
         Image {
             visible: root.gercek
@@ -53,10 +61,11 @@ Rectangle {
     Rectangle {
         id: bottomBand
         anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
-        height: Math.round(root.height * 0.12)
+        height: Math.round(88 * root.s)
         gradient: Gradient {
-            GradientStop { position: 0.0; color: "#003399" }
-            GradientStop { position: 1.0; color: "#00287F" }
+            orientation: Gradient.Horizontal
+            GradientStop { position: 0.0; color: "#3934AD" }
+            GradientStop { position: 1.0; color: "#00309C" }
         }
         Image {
             visible: root.gercek
@@ -86,6 +95,8 @@ Rectangle {
 
         Image {
             visible: root.gercek
+            width: Math.round(219 * root.s)
+            height: Math.round(207 * root.s)
             source: root.varlik + "logon-glow.png"
         }
         Image {
@@ -93,7 +104,7 @@ Rectangle {
             x: Math.round(parent.width * 0.5)
             anchors.verticalCenter: parent.verticalCenter
             width: 1
-            height: parent.height * 0.82
+            height: Math.round(parent.height * 0.82)
             source: root.varlik + "logon-divider.png"
         }
         Rectangle {
@@ -101,7 +112,7 @@ Rectangle {
             x: Math.round(parent.width * 0.5)
             anchors.verticalCenter: parent.verticalCenter
             width: 1
-            height: parent.height * 0.82
+            height: Math.round(parent.height * 0.82)
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "#005A7EDC" }
                 GradientStop { position: 0.5; color: "#FFFFFF" }
@@ -109,22 +120,32 @@ Rectangle {
             }
         }
 
-        // XP: logonui "Hoş Geldiniz", arial 36, beyaz italik, ayracın solunda
-        Text {
+        Item {
             id: welcome
             anchors.right: parent.horizontalCenter
-            anchors.rightMargin: 24
+            anchors.rightMargin: Math.round(22 * root.s)
             anchors.verticalCenter: parent.verticalCenter
-            text: "Hoş Geldiniz"
-            color: "#FFFFFF"
-            font.family: "Arial"
-            font.pixelSize: 48
-            font.italic: true
-            font.bold: true
-            style: Text.Raised
-            styleColor: "#3555B5"
+            width: yazi.implicitWidth
+            height: yazi.implicitHeight
             opacity: 0
             NumberAnimation on opacity { from: 0; to: 1; duration: 700; running: true }
+
+            Text {
+                x: Math.round(2 * root.s)
+                y: Math.round(3 * root.s)
+                text: yazi.text
+                font: yazi.font
+                color: "#3151B5"                 // rgb(49,81,181)
+            }
+            Text {
+                id: yazi
+                text: "Hoş Geldiniz"
+                color: "#EFF7FF"                 // rgb(239,247,255)
+                font.family: "Arial"
+                font.pixelSize: Math.round(48 * root.s)   // 36 pt
+                font.italic: true
+                font.bold: true
+            }
         }
     }
 

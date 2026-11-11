@@ -30,7 +30,7 @@ sndrec32.exe narrator.exe utilman.exe accwiz.exe cdplayer.exe mspaint.exe shimgv
 cabview.dll url.dll mydocs.dll syncui.dll dfrgres.dll compstui.dll ntbackup.exe migwiz.exe
 wiashext.dll sti.dll mmcndmgr.dll comres.dll pifmgr.dll setupapi.dll mmc.exe eventvwr.exe
 devmgr.dll themeui.dll printui.dll netplwiz.dll wlanui.dll xpsp1res.dll ole2.dll browseui.dll
-shdoclc.dll webcheck.dll""".split()
+shdoclc.dll webcheck.dll msgina.dll winlogon.exe winver.exe""".split()
 FONT = """tahoma.ttf tahomabd.ttf trebuc.ttf trebucbd.ttf trebucit.ttf trebucbi.ttf framd.ttf framdit.ttf
 lucon.ttf verdana.ttf verdanab.ttf verdanai.ttf verdanaz.ttf micross.ttf marlett.ttf arial.ttf
 arialbd.ttf ariali.ttf arialbi.ttf ariblk.ttf times.ttf timesbd.ttf timesi.ttf timesbi.ttf cour.ttf

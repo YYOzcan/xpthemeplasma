@@ -25,6 +25,7 @@ if [[ "${1:-}" == "--plymouth" || "${1:-}" == "--plymouth-geri" ]]; then
         onceki=$(cat /usr/share/plymouth/themes/xpthemeplasma/.onceki 2>/dev/null || echo bgrt)
         systemctl disable xp-boot-bekle.service 2>/dev/null || true
         rm -f /etc/systemd/system/xp-boot-bekle.service
+        sed -i '/^# XPThemePlasma$/d; /^UseSimpledrm=1$/d' /etc/plymouth/plymouthd.conf
         plymouth-set-default-theme -R "$onceki"
         echo "Plymouth teması geri alındı: $onceki"
         exit 0
@@ -38,9 +39,19 @@ if [[ "${1:-}" == "--plymouth" || "${1:-}" == "--plymouth-geri" ]]; then
     install -Dm644 plymouth/xp-boot-bekle.service /etc/systemd/system/xp-boot-bekle.service
     systemctl daemon-reload
     systemctl enable xp-boot-bekle.service
+    # Plymouth 24+ simpledrm'i (UEFI çerçeve arabelleği) DeviceTimeout dolana dek yok sayar ve
+    # NVIDIA/AMD sürücüsünü bekler; o yüzden XP ekranı açılışın sonunda yalnızca 2-3 sn görünüyordu.
+    # UseSimpledrm=1: çizim hemen simpledrm'de başlar, sürücü gelince Plymouth ona geçer.
+    plymouth-set-default-theme xpthemeplasma
+    conf=/etc/plymouth/plymouthd.conf
+    grep -q '^\[Daemon\]' "$conf" 2>/dev/null || printf '[Daemon]\nTheme=xpthemeplasma\n' >> "$conf"
+    if ! grep -q '^UseSimpledrm=' "$conf"; then
+        sed -i '0,/^\[Daemon\]/s//[Daemon]\n# XPThemePlasma\nUseSimpledrm=1/' "$conf"
+    fi
     echo "==> initramfs yeniden oluşturuluyor (birkaç dakika sürebilir)"
     plymouth-set-default-theme -R xpthemeplasma
-    echo "Plymouth: XP açılış ekranı (en az 10 sn). Geri almak: sudo bash $0 --plymouth-geri"
+    echo "Plymouth: XP açılış ekranı (en az 10 sn görünür) ve kapanışta \"Windows kapatılıyor...\"."
+    echo "Geri almak: sudo bash $0 --plymouth-geri"
     exit 0
 fi
 
@@ -81,10 +92,10 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$DATA/color-schemes/XPLuna.colors" "$DATA/wallpapers/XPThemePlasma" "$DATA"/wallpapers/XP-* \
            "$DATA/locale/tr/LC_MESSAGES/plasma_applet_io.github.yyozcan.xpstart.mo" \
            "$DATA/locale/tr/LC_MESSAGES/xpthemeplasma.mo" \
-           "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$DATA/xpthemeplasma" \
+           "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$BIN/xp-giris-sesi" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
            "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
-           "$DATA/kwin/tabbox/xp_alttab" "$BIN/xp-notdefteri" "$BIN/xp-gezgin" "$BIN/xp-denetim"
+           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN/xp-notdefteri" "$BIN/xp-gezgin" "$BIN/xp-denetim"
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -107,7 +118,7 @@ if [[ -f "$XPD/stil/luna.msstyles" ]]; then
     $PY tools/gen_luna_kvantum.py "$XPD/stil/luna.msstyles" build/kvantum
     $PY tools/gen_luna_plasma.py "$XPD" build/desktoptheme build/varlik
     rm -rf build/wallpapers-xp && $PY tools/gen_luna_duvar.py "$XPD" build/wallpapers-xp
-    $PY tools/gen_luna_plymouth.py build/varlik build/plymouth/xpthemeplasma
+    $PY tools/gen_luna_plymouth.py build/varlik build/plymouth/xpthemeplasma "$XPD"
     rm -rf build/icons build/sounds
     $PY tools/gen_luna_ikon.py "$XPD" "build/icons/Windows XP"
     $PY tools/gen_luna_imlec.py "$XPD" "build/icons/Windows XP"
@@ -139,6 +150,7 @@ for p in plasma/plasmoids/*/; do
     kopyala "$p" "$DATA/plasma/plasmoids/$(basename "$p")"
 done
 kopyala kwin/tabbox/xp_alttab "$DATA/kwin/tabbox/xp_alttab"
+kopyala kwin/effects/xp_gri "$DATA/kwin/effects/xp_gri"
 kopyala plasma/shells/io.github.yyozcan.xpshell "$DATA/plasma/shells/io.github.yyozcan.xpshell"
 kopyala plasma/layout-templates/io.github.yyozcan.xptaskbar "$DATA/plasma/layout-templates/io.github.yyozcan.xptaskbar"
 kopyala plasma/look-and-feel/io.github.yyozcan.xpluna "$DATA/plasma/look-and-feel/io.github.yyozcan.xpluna"
@@ -197,8 +209,18 @@ done
 
 echo "==> XP oturumu varsayılanları (XDG katmanı)"
 XDGK="$DATA/xpthemeplasma/xdg"
-mkdir -p "$XDGK"
-cp session/xdg/* "$XDGK/"
+mkdir -p "$XDGK/autostart"
+cp session/xdg/* "$XDGK/" 2>/dev/null || true
+# oturum açma sesi: yalnızca XP oturumunda (XDG_CONFIG_DIRS katmanındaki autostart)
+cat > "$XDGK/autostart/xp-giris-sesi.desktop" <<EOD
+[Desktop Entry]
+Type=Application
+Name=XP oturum açma sesi
+Exec=$BIN/xp-giris-sesi
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+EOD
 SIMGE="breeze"
 for t in "Windows 7 Aero" "Windows XP" "Windows-XP"; do
     if [[ -d "/usr/share/icons/$t" || -d "$DATA/icons/$t" ]]; then SIMGE="$t"; fi
@@ -209,6 +231,7 @@ echo "    simge teması: $SIMGE"
 echo "==> Oturum yardımcıları"
 install -Dm755 session/xp-profil "$BIN/xp-profil"
 install -Dm755 session/xp-oturum "$BIN/xp-oturum"
+install -Dm755 session/xp-giris-sesi "$BIN/xp-giris-sesi"
 install -Dm644 session/xpthemeplasma-env.sh "$CFG/plasma-workspace/env/xpthemeplasma.sh"
 
 # Plasma'nın paket önbelleğini tazele

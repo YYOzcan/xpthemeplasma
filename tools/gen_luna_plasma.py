@@ -120,10 +120,10 @@ def varliklar(ms, xp, out):
             ("g2", ms.color(cls, "GradientColor2")), ("fill", ms.color(cls, "FillColor"))]}
     meta["explorerbar"] = eb
     # araç çubuğu şeritleri (Gezgin: shell32 214/215, IE: 204/205; 24 px)
-    sh = PEResources((Path(xp) / "ikon/shell32.dll").read_bytes())
+    s32 = PEResources((Path(xp) / "ikon/shell32.dll").read_bytes())
     for bid, name in [(214, "tb-gezgin"), (215, "tb-gezgin-hot"), (204, "tb-ie"), (205, "tb-ie-hot"),
                       (216, "tb-gezgin-16")]:
-        d = sh.get("BITMAP", bid)
+        d = s32.get("BITMAP", bid)
         if d:
             im, _ = decode_dib(d)
             save(name, im)
@@ -197,6 +197,39 @@ def varliklar(ms, xp, out):
             if d:
                 im, _ = decode_dib(d)
                 save(name, im)
+
+    # ---- "Bilgisayarı Kapat" (msgina.dll) ve "Windows Oturumunu Kapat" (shell32.dll) pencereleri:
+    # 313x198 arka plan, 48x40 bayrak, 32x32 düğme şeritleri (normal, basılı, üzerinde; mor = saydam)
+    def mor_saydam(im):
+        im = im.convert("RGBA")
+        px = im.load()
+        for y in range(im.height):
+            for x in range(im.width):
+                if px[x, y][:3] == (255, 0, 255):
+                    px[x, y] = (0, 0, 0, 0)
+        return im
+
+    def serit(res, bid, ad, n):
+        d = res.get("BITMAP", bid)
+        if d:
+            im = mor_saydam(decode_dib(d)[0])
+            for i in range(n):
+                save(f"{ad}-{i}", im.crop((0, i * 32, 32, i * 32 + 32)))
+
+    mg = Path(xp) / "ikon/msgina.dll"
+    if mg.exists():
+        mr = PEResources(mg.read_bytes())
+        for rid, name in [(20142, "kapat-bg"), (20143, "kapat-bayrak")]:
+            d = mr.get("BITMAP", rid)
+            if d:
+                save(name, decode_dib(d)[0])
+        serit(mr, 20150, "kapat-dugme", 10)
+    for rid, name in [(14354, "oturum-bg"), (14355, "oturum-bayrak"), (131, "hakkinda-banner"),
+                      (138, "hakkinda-cizgi")]:
+        d = s32.get("BITMAP", rid)
+        if d:
+            save(name, decode_dib(d)[0])
+    serit(s32, 14356, "oturum-dugme", 6)
 
     strings = ex.strings()
     meta["strings"] = {"start": strings.get(578, "start"), "startTip": strings.get(533, ""),

@@ -1,0 +1,14 @@
+{
+    "KPackageStructure": "KWin/Effect",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Category": "Appearance",
+        "Description": "Windows XP: Bilgisayarı Kapat penceresi açıkken masaüstü yavaşça griye döner",
+        "EnabledByDefault": false,
+        "Id": "xp_gri",
+        "License": "GPL",
+        "Name": "XP Kapatma Grisi"
+    },
+    "X-KDE-Ordering": 50,
+    "X-Plasma-API": "javascript"
+}

@@ -1,0 +1,34 @@
+#!/bin/sh
+# XPThemePlasma — XP oturum açma sesi (Plasma 6 "startkde" olayını artık hiç tetiklemiyor).
+# "Hoş Geldiniz" ekranı (ksplashqml) kapanıp masaüstü görününce çalar:
+#   açılıştan sonraki ilk girişte "Windows XP Başlangıç", sonraki girişlerde "Windows XP Oturum Açma".
+SES="${XDG_DATA_HOME:-$HOME/.local/share}/sounds/Windows XP/stereo"
+DURUM="${XDG_STATE_HOME:-$HOME/.local/state}/xpthemeplasma"
+mkdir -p "$DURUM"
+
+acilis=$(cat /proc/sys/kernel/random/boot_id 2>/dev/null)
+if [ "$(cat "$DURUM/son-acilis" 2>/dev/null)" != "$acilis" ]; then
+    dosya="$SES/desktop-login.wav"          # xpstartu.wav
+    echo "$acilis" > "$DURUM/son-acilis"
+else
+    dosya="$SES/service-login.wav"          # xplogon.wav
+fi
+[ -f "$dosya" ] || exit 0
+
+# Hoş Geldiniz ekranının kapanmasını bekle (en çok 30 sn)
+i=0
+while pgrep -u "$(id -u)" -x ksplashqml >/dev/null 2>&1 && [ $i -lt 150 ]; do
+    sleep 0.2; i=$((i + 1))
+done
+sleep 0.3
+
+# PipeWire henüz hazır değilse birkaç kez dene
+for _ in 1 2 3 4 5; do
+    if command -v pw-play >/dev/null; then
+        pw-play "$dosya" 2>/dev/null && exit 0
+    elif command -v paplay >/dev/null; then
+        paplay "$dosya" 2>/dev/null && exit 0
+    fi
+    sleep 1
+done
+exit 0
