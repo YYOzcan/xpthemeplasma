@@ -368,8 +368,8 @@ private:
         const QStringList s = secili();
         if (yol == BILGISAYARIM) {
             auto *g = k.bolme->grup("Sistem Görevleri", true);
-            g->baglanti("computer", "Sistem bilgilerini görüntüle", [] { QProcess::startDetached("kinfocenter", {}); });
-            g->baglanti("system-software-install", "Program ekle veya kaldır", [] { QProcess::startDetached("xp-denetim", {}); });
+            g->baglanti("computer", "Sistem bilgilerini görüntüle", [] { QProcess::startDetached(QDir::homePath() + "/.local/bin/xp-sistem", {}); });
+            g->baglanti("system-software-install", "Program ekle veya kaldır", [] { QProcess::startDetached(QDir::homePath() + "/.local/bin/xp-programlar", {}); });
             g->baglanti("preferences-system", "Bir ayarı değiştir", [] { QProcess::startDetached("xp-denetim", {}); });
         } else {
             auto *g = k.bolme->grup(s.isEmpty() ? "Dosya ve Klasör Görevleri" : (s.size() == 1 ? (QFileInfo(s[0]).isDir() ? "Dosya ve Klasör Görevleri" : "Dosya ve Klasör Görevleri") : "Dosya ve Klasör Görevleri"), true);

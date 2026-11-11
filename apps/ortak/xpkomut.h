@@ -38,7 +38,14 @@ inline QStringList xpKomutu(const QString &komut) {
     if (k == "sysdm.cpl" || k == "control sysdm.cpl") return bin("xp-sistem");
     if (k == "timedate.cpl" || k == "control timedate.cpl") return bin("xp-tarihsaat");
     if (k == "desk.cpl" || k == "control desk.cpl" || k == "control desktop") return bin("xp-gorunum");
-    if (k == "appwiz.cpl" || k == "control appwiz.cpl") return {"plasma-discover"};
+    if (k == "appwiz.cpl" || k == "control appwiz.cpl") {
+        const QStringList a = bin("xp-programlar");
+        return a.isEmpty() ? QStringList{"plasma-discover"} : a;
+    }
+    if (k == "ncpa.cpl" || k == "control ncpa.cpl") {
+        const QStringList a = bin("xp-ag");
+        if (!a.isEmpty()) return a;
+    }
     if (k == "msconfig" || k == "msconfig.exe") return kcm("kcm_autostart");
     if (k == "regedit" || k == "regedit.exe" || k == "regedt32") return wine("regedit.exe");
     if (k == "iexplore" || k == "iexplore.exe") return {"xdg-open", "about:blank"};

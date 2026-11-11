@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Program Ekle veya Kaldır
+Comment=Programları ve Windows bileşenlerini yükle veya kaldır.
+Exec=xp-programlar
+Icon=system-software-install
+NoDisplay=true
+Categories=Settings;System;

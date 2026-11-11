@@ -99,7 +99,7 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$BIN/xp-giris-sesi" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
            "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
-           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN"/xp-notdefteri "$BIN"/xp-gezgin "$BIN"/xp-denetim "$BIN"/xp-calistir "$BIN"/xp-sistem "$BIN"/xp-tarihsaat "$BIN"/xp-gorunum "$BIN"/xp-hakkinda "$BIN"/xp-gorev "$BIN"/xp-ag "$BIN"/xp-ekrankoruyucu "$BIN"/xp-wine
+           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN"/xp-notdefteri "$BIN"/xp-gezgin "$BIN"/xp-denetim "$BIN"/xp-calistir "$BIN"/xp-sistem "$BIN"/xp-tarihsaat "$BIN"/xp-gorunum "$BIN"/xp-hakkinda "$BIN"/xp-gorev "$BIN"/xp-ag "$BIN"/xp-programlar "$BIN"/xp-ekrankoruyucu "$BIN"/xp-wine
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -219,7 +219,7 @@ if command -v g++ >/dev/null && pkg-config --exists Qt6Widgets Qt6PrintSupport; 
     UYG=("notdefteri:xp-notdefteri:Qt6Widgets Qt6PrintSupport:" "gezgin:xp-gezgin:Qt6Widgets:"
          "denetim:xp-denetim:Qt6Widgets:" "calistir:xp-calistir:Qt6Widgets:" "sistem:xp-sistem:Qt6Widgets:"
          "tarihsaat:xp-tarihsaat:Qt6Widgets:" "gorunum:xp-gorunum:Qt6Widgets:" "hakkinda:xp-hakkinda:Qt6Widgets:"
-         "ag:xp-ag:Qt6Widgets:")
+         "ag:xp-ag:Qt6Widgets:" "programlar:xp-programlar:Qt6Widgets:")
     [[ -f /usr/include/taskmanager/tasksmodel.h ]] && UYG+=("gorev:xp-gorev:Qt6Widgets Qt6Network Qt6Qml:-ltaskmanager")
     [[ -f /usr/include/KF6/KIdleTime/kidletime.h ]] && UYG+=("ekrankoruyucu:xp-ekrankoruyucu:Qt6Gui Qt6DBus:-I/usr/include/KF6/KIdleTime -lKF6IdleTime")
     for app in "${UYG[@]}"; do

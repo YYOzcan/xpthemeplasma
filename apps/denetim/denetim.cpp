@@ -77,7 +77,7 @@ static QList<Kategori> kategoriler() {
                {"Ses Düzeni", "preferences-desktop-sound", "kcm:kcm_soundtheme"},
                {"Bildirimler", "preferences-desktop-notification-bell", "kcm:kcm_notifications"}}});
     l.append({"Performans ve Bakım", "preferences-system-performance",
-              {{"Bu bilgisayarla ilgili bilgileri görün", "kinfocenter"},
+              {{"Bu bilgisayarla ilgili bilgileri görün", "xp-sistem"},
                {"Sabit diskte yer açın", "filelight"},
                {"Güç seçeneklerini ayarlayın", "kcm:kcm_powerdevilprofilesconfig"}},
               {{"Sistem", "computer", "xp-sistem"},
@@ -250,6 +250,8 @@ private:
         for (int i = 0; i < liste.size(); ++i) {
             auto *b = new KategoriBaglanti(liste[i].ikon, liste[i].ad, 32, [this, i] {
                 if (liste[i].ad == "Program Ekle veya Kaldır") {
+                    const QString xp = bul("xp-programlar");
+                    if (!xp.isEmpty()) { QProcess::startDetached(xp, {}); return; }
                     QString pm = paketYoneticisi();
                     if (!pm.isEmpty()) QProcess::startDetached(pm, {});
                     else QMessageBox::information(this, "Program Ekle veya Kaldır", "Paket yöneticisi bulunamadı (Discover, Octopi, Pamac).");
