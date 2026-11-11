@@ -8,6 +8,8 @@ import QtQuick
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 import org.kde.plasma.configuration
+import org.kde.plasma.plasma5support as P5Support
+import QtCore
 
 AppletConfiguration {
     id: root
@@ -35,4 +37,20 @@ AppletConfiguration {
     }
 //END model
 
+    // XP: masaüstüne sağ tıklama > "Özellikler" Görüntü Özellikleri'ni açar (XPThemePlasma)
+    P5Support.DataSource {
+        id: xpKomut
+        engine: "executable"
+        connectedSources: []
+        onNewData: source => disconnectSource(source)
+    }
+    Component.onCompleted: {
+        const masaustu = ["org.kde.plasma.folder", "org.kde.desktopcontainment"].indexOf(configDialog.containmentPlugin) !== -1;
+        const yerel = StandardPaths.writableLocation(StandardPaths.HomeLocation).toString().replace("file://", "") + "/.local/bin";
+        const gorunum = StandardPaths.findExecutable("xp-gorunum", [yerel]);
+        if (masaustu && gorunum.toString() !== "") {
+            xpKomut.connectSource("setsid -f \"" + gorunum.toString().replace("file://", "") + "\"");
+            Qt.callLater(configDialog.close);
+        }
+    }
 }

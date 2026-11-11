@@ -1,0 +1,18 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Category": "System Information",
+        "Description": "Windows XP local area connection tray icon",
+        "Description[tr]": "Windows XP Yerel Ağ Bağlantısı bildirim alanı simgesi",
+        "Icon": "network-wired",
+        "Id": "io.github.yyozcan.xpag",
+        "License": "GPL-3.0-or-later",
+        "Name": "XP Network",
+        "Name[tr]": "XP Yerel Ağ Bağlantısı",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0",
+    "X-Plasma-NotificationArea": "true",
+    "X-Plasma-NotificationAreaCategory": "Hardware"
+}

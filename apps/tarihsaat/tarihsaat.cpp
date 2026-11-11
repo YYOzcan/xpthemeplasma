@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
     auto *yil = new QSpinBox;
     yil->setRange(1980, 2099);
     s->yerlestir(706, yil);
-    yil->resize(xp::dluX(50), yil->height());
+    yil->resize(xp::dluX(42), yil->height());   // UDS_ALIGNRIGHT: düğme kutunun içinde
     auto *takvim = new Takvim;
     s->yerlestir(711, takvim);
     auto *saat = new Saat;

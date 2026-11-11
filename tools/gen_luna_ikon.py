@@ -103,6 +103,19 @@ MAP = [
     ("spider.exe", 103, "apps", "xp-spider org.kde.kspider"),
     ("freecell.exe", 601, "apps", "xp-freecell freecell"),
     ("pinball.exe", "ICON_1", "apps", "xp-pinball"),
+    # XP SP2 Bluetooth bildirim alanı simgesi (bthci.dll) ve Bluetooth Dosya Aktarımı (fsquirt.exe)
+    ("bthci.dll", 201, "status", "network-bluetooth network-bluetooth-activated network-bluetooth-inactive "
+                                 "network-bluetooth-activated-locked bluetooth-active bluetooth-online bluetooth-disabled"),
+    ("bthci.dll", 201, "apps", "preferences-system-bluetooth preferences-system-bluetooth-activated "
+                               "preferences-system-bluetooth-inactive bluetooth blueman"),
+    ("fsquirt.exe", 107, "apps", "org.kde.bluedevilsendfile bluedevil-sendfile"),
+    # bildirim alanı ağ simgesi (iki ekran): boşta, gönderiyor, alıyor, ikisi, kablo yok, sınırlı
+    ("netshell.dll", 190, "status", "xp-ag-bos"),
+    ("netshell.dll", 191, "status", "xp-ag-giden"),
+    ("netshell.dll", 192, "status", "xp-ag-gelen"),
+    ("netshell.dll", 193, "status", "xp-ag-ikisi"),
+    ("netshell.dll", 195, "status", "xp-ag-kopuk"),
+    ("netshell.dll", 196, "status", "xp-ag-sinirli"),
     ("sysdm.cpl", 1, "apps", "xp-sistem"),
     ("timedate.cpl", 200, "apps", "xp-tarihsaat"),
     ("desk.cpl", 100, "apps", "xp-gorunum"),

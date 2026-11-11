@@ -1,0 +1,16 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [{ "Name": "XPThemePlasma" }],
+        "Category": "Date and Time",
+        "Description": "Windows XP notification area clock",
+        "Description[tr]": "Windows XP bildirim alanı saati: üzerine gelince tarih, çift tıklayınca Tarih ve Saat Özellikleri",
+        "Icon": "preferences-system-time",
+        "Id": "io.github.yyozcan.xpsaat",
+        "License": "GPL-3.0-or-later",
+        "Name": "XP Clock",
+        "Name[tr]": "XP Saati",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

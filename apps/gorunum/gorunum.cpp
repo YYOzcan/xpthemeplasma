@@ -231,31 +231,78 @@ int main(int argc, char **argv) {
     ek->yerlestir(1302, ekOnizleme);
     ekOnizleme->cerceve = monitor;
     ekOnizleme->renk = Qt::black;
+    // XP'nin gerçek ekran koruyucuları (kendi XP kopyandan .scr, Wine ile; xp-ekrankoruyucu zamanlar)
+    const QString ekDizin = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/xpthemeplasma/xp/ekrankoruyucu/";
+    const QString ekAyar = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/xpthemeplasma/ekrankoruyucu.conf";
     auto *koruyucu = ek->k<QComboBox>(1300);
-    koruyucu->addItems({"(Yok)", "Boş"});
-    QSettings kilit(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/kscreenlockerrc", QSettings::IniFormat);
-    const bool otomatik = kilit.value("Daemon/Autolock", true).toBool();
-    const int sure = kilit.value("Daemon/Timeout", 5).toInt();
-    koruyucu->setCurrentIndex(otomatik && sure > 0 ? 1 : 0);
+    koruyucu->addItem(tu.dize(2022, "(Yok)"), QString());
+    {
+        QFile lf(ekDizin + "liste.json");
+        QList<QPair<QString, QString>> l;
+        if (lf.open(QIODevice::ReadOnly)) {
+            const QJsonObject o = QJsonDocument::fromJson(lf.readAll()).object();
+            for (auto it = o.begin(); it != o.end(); ++it) l << qMakePair(it.value().toString(), it.key());
+        }
+        QCollator c(QLocale(QLocale::Turkish));
+        std::sort(l.begin(), l.end(), [&](const auto &a, const auto &b) { return c.compare(a.first, b.first) < 0; });
+        for (const auto &e : l) koruyucu->addItem(e.first, e.second);
+    }
+    QSettings ekA(ekAyar, QSettings::IniFormat);
+    koruyucu->setCurrentIndex(qMax(0, koruyucu->findData(ekA.value("dosya", koruyucu->count() > 1 ? "logon.scr" : "").toString())));
     auto *dakika = new QSpinBox;
     dakika->setRange(1, 9999);
-    dakika->setValue(qMax(1, sure));
+    dakika->setValue(ekA.value("dakika", 10).toInt());
     ek->yerlestir(1306, dakika);
-    dakika->resize(xp::dluX(44), 21);
+    dakika->resize(xp::dluX(33), 21);           // UDS_ALIGNRIGHT: düğme kutunun içinde
     auto *parola = ek->k<QCheckBox>(1320);
-    parola->setText("Devamında &parola koruması");
-    parola->setChecked(kilit.value("Daemon/LockOnResume", true).toBool());
-    for (int id : {1303, 1304}) if (auto *b = ek->k<QPushButton>(id)) b->setEnabled(false);
+    parola->setText("Devamında &Hoş Geldiniz ekranı");
+    parola->setChecked(ekA.value("hosgeldiniz", true).toBool());
     if (auto *l = ek->k<QLabel>(1305)) { l->setPixmap(tu.bitmap(122)); l->setAlignment(Qt::AlignCenter); }
     if (auto *b = ek->k<QPushButton>(1314))
         QObject::connect(b, &QPushButton::clicked, [] { QProcess::startDetached("kcmshell6", {"kcm_powerdevilprofilesconfig"}); });
+    const QString wineYol = QDir::homePath() + "/.local/bin/xp-wine";
+    if (auto *b = ek->k<QPushButton>(1303))
+        QObject::connect(b, &QPushButton::clicked, &d, [&, wineYol] {
+            const QString f = koruyucu->currentData().toString();
+            if (!f.isEmpty()) QProcess::startDetached(wineYol, {f, "/c"});
+        });
+    if (auto *b = ek->k<QPushButton>(1304))
+        QObject::connect(b, &QPushButton::clicked, &d, [&, wineYol] {
+            const QString f = koruyucu->currentData().toString();
+            if (!f.isEmpty()) QProcess::startDetached(wineYol, {f, "/s"});
+        });
+    // küçük monitörde önizleme: "Windows XP" logosu XP'deki gibi rastgele yerlerde belirir
+    const QPixmap xpLogo(ekDizin + "logon-onizleme.png");
+    QTimer ekZaman;
+    auto ekCiz = [&] {
+        const QString f = koruyucu->currentData().toString();
+        ekOnizleme->icerik = QPixmap();
+        if (f == "logon.scr" && !xpLogo.isNull()) {
+            const double k = EKRAN.width() / double(QGuiApplication::primaryScreen()->size().width());
+            const QSize boy(qMax(8, int(xpLogo.width() * k * 1.6)), qMax(5, int(xpLogo.height() * k * 1.6)));
+            QPixmap ekran(EKRAN.size());
+            ekran.fill(Qt::black);
+            QPainter p(&ekran);
+            const int x = QRandomGenerator::global()->bounded(qMax(1, EKRAN.width() - boy.width()));
+            const int y = QRandomGenerator::global()->bounded(qMax(1, EKRAN.height() - boy.height()));
+            p.drawPixmap(QRect(QPoint(x, y), boy), xpLogo);
+            p.end();
+            ekOnizleme->icerik = ekran;
+            ekOnizleme->konum = 2;
+        }
+        ekOnizleme->update();
+    };
+    QObject::connect(&ekZaman, &QTimer::timeout, &d, ekCiz);
+    ekZaman.start(3000);
+    ekCiz();
     auto koruyucuDurum = [&] {
         const bool var = koruyucu->currentIndex() > 0;
         dakika->setEnabled(var);
         parola->setEnabled(var);
+        for (int id : {1303, 1304}) if (auto *b = ek->k<QPushButton>(id)) b->setEnabled(var);
     };
     koruyucuDurum();
-    QObject::connect(koruyucu, &QComboBox::activated, &d, [&] { koruyucuDurum(); d.degisti(); });
+    QObject::connect(koruyucu, &QComboBox::activated, &d, [&] { koruyucuDurum(); ekCiz(); d.degisti(); });
     QObject::connect(dakika, &QSpinBox::valueChanged, &d, [&] { d.degisti(); });
     QObject::connect(parola, &QCheckBox::toggled, &d, [&] { d.degisti(); });
 
@@ -269,7 +316,15 @@ int main(int argc, char **argv) {
     auto *pencereStil = gr->k<QComboBox>(1111);
     pencereStil->addItem("Windows XP stili");
     auto *renkDuzeni = gr->k<QComboBox>(1114);
+    // luna.msstyles'ın üç renk düzeni; "varlik" bağlantısı etkin olanı gösterir
+    const QString xpVeri = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/xpthemeplasma";
+    const QStringList duzenDizin{"varlik-mavi", "varlik-zeytin", "varlik-gumus"};
     renkDuzeni->addItem("Varsayılan (mavi)");
+    if (QFileInfo::exists(xpVeri + "/varlik-zeytin")) renkDuzeni->addItem("Zeytin Yeşili");
+    if (QFileInfo::exists(xpVeri + "/varlik-gumus")) renkDuzeni->addItem("Gümüş");
+    const int duzen = qMax(0, int(duzenDizin.indexOf(QFileInfo(xpVeri + "/varlik").symLinkTarget().section('/', -1))));
+    renkDuzeni->setCurrentIndex(qMin(duzen, renkDuzeni->count() - 1));
+    QObject::connect(renkDuzeni, &QComboBox::activated, &d, [&] { d.degisti(); });
     auto *boyut = gr->k<QComboBox>(1116);
     boyut->addItems({"Normal", "Büyük Yazı Tipleri", "Çok Büyük Yazı Tipleri"});
     QSettings kg(QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + "/kdeglobals", QSettings::IniFormat);
@@ -370,12 +425,16 @@ int main(int argc, char **argv) {
             }
             plasmaBetik(js);
         }
-        // ekran koruyucu = Plasma ekran kilidi
-        const bool var = koruyucu->currentIndex() > 0;
-        QProcess::execute("kwriteconfig6", {"--file", "kscreenlockerrc", "--group", "Daemon", "--key", "Autolock", var ? "true" : "false"});
-        QProcess::execute("kwriteconfig6", {"--file", "kscreenlockerrc", "--group", "Daemon", "--key", "Timeout", QString::number(var ? dakika->value() : 0)});
-        QProcess::execute("kwriteconfig6", {"--file", "kscreenlockerrc", "--group", "Daemon", "--key", "LockOnResume", parola->isChecked() ? "true" : "false"});
-        QProcess::execute("qdbus6", {"org.freedesktop.ScreenSaver", "/ScreenSaver", "org.kde.screensaver.configure"});
+        // ekran koruyucu: xp-ekrankoruyucu ayarı; Plasma'nın kendi boşta kilitlemesi XP oturumunda kapalı
+        {
+            QSettings a(ekAyar, QSettings::IniFormat);
+            a.setValue("dosya", koruyucu->currentData().toString());
+            a.setValue("dakika", dakika->value());
+            a.setValue("hosgeldiniz", parola->isChecked());
+            a.sync();
+            QProcess::execute("kwriteconfig6", {"--file", "kscreenlockerrc", "--group", "Daemon", "--key", "Autolock", "false"});
+            QProcess::execute("qdbus6", {"org.freedesktop.ScreenSaver", "/ScreenSaver", "org.kde.screensaver.configure"});
+        }
         // yazı tipi boyutu (Tahoma 8 / 10 / 12)
         const int yeniPt = boyut->currentIndex() == 2 ? 12 : boyut->currentIndex() == 1 ? 10 : 8;
         if (yeniPt != (pt ? pt : 8)) {
@@ -383,6 +442,37 @@ int main(int argc, char **argv) {
             for (const QString &k : {"font", "menuFont", "toolBarFont"})
                 QProcess::execute("kwriteconfig6", {"--file", "kdeglobals", "--group", "General", "--key", k, f});
             QProcess::execute("dbus-send", {"--session", "--type=signal", "/KGlobalSettings", "org.kde.KGlobalSettings.notifyChange", "int32:1", "int32:0"});
+        }
+        // XP büyük yazı tiplerinde başlık çubuğu yazısı da büyür (Trebuchet MS 10 / 14 / 17)
+        if (yeniPt != (pt ? pt : 8)) {
+            const int baslik = yeniPt == 12 ? 17 : yeniPt == 10 ? 14 : 10;
+            QProcess::execute("kwriteconfig6", {"--file", "kdeglobals", "--group", "WM", "--key", "activeFont",
+                                                QString("Trebuchet MS,%1,-1,5,700,0,0,0,0,0,0,0,0,0,0,1").arg(baslik)});
+            QProcess::execute("qdbus6", {"org.kde.KWin", "/KWin", "reconfigure"});
+        }
+        // renk düzeni: pencere çerçevesi, Kvantum, Plasma teması, renk şeması, Başlat/görev çubuğu görselleri
+        const int yeniDuzen = renkDuzeni->currentText() == "Zeytin Yeşili" ? 1 : renkDuzeni->currentText() == "Gümüş" ? 2 : 0;
+        const int eskiDuzen = qMax(0, int(duzenDizin.indexOf(QFileInfo(xpVeri + "/varlik").symLinkTarget().section('/', -1))));
+        if (yeniDuzen != eskiDuzen) {
+            QProgressDialog bekle("Lütfen bekleyin...", QString(), 0, 0, &d);
+            bekle.setWindowTitle("Görüntü Özellikleri");
+            bekle.setMinimumDuration(0);
+            bekle.show();
+            QApplication::processEvents();
+            const QString ek = QStringList{"", "Zeytin", "Gumus"}.at(yeniDuzen);
+            QFile::remove(xpVeri + "/varlik");
+            QFile::link(duzenDizin.at(yeniDuzen), xpVeri + "/varlik");
+            QProcess::execute("plasma-apply-colorscheme", {"XPLuna" + ek});
+            QProcess::execute("plasma-apply-desktoptheme", {ek.isEmpty() ? QString("XP-Luna") : "XP-Luna-" + ek});
+            QProcess::execute("kwriteconfig6", {"--file", "kwinrc", "--group", "org.kde.kdecoration2", "--key", "theme",
+                                                ek.isEmpty() ? QString("__aurorae__svg__XP-Luna") : "__aurorae__svg__XP-Luna-" + ek});
+            QProcess::execute("kwriteconfig6", {"--file", "Kvantum/kvantum.kvconfig", "--group", "General", "--key", "theme", "XPLuna" + ek});
+            QProcess::execute("qdbus6", {"org.kde.KWin", "/KWin", "reconfigure"});
+            const QString wine = QDir::homePath() + "/.local/bin/xp-wine";
+            if (QFileInfo(wine).isExecutable())
+                QProcess::startDetached(wine, {"--renk", QStringList{"NormalColor", "HomeStead", "Metallic"}.at(yeniDuzen)});
+            // görev çubuğu ve Başlat menüsü yeni görselleri yüklesin
+            QProcess::startDetached("systemctl", {"--user", "restart", "plasma-plasmashell"});
         }
         // çözünürlük
         const QSize s = boyutlar.value(kaydirici->value());

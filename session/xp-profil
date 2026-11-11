@@ -56,6 +56,8 @@ YONETILEN = {
         "TabBox": {"LayoutName": "xp_alttab", "HighlightWindows": "false", "ShowDesktopMode": "0"},
     },
     "plasmarc": {"Theme": {"name": "XP-Luna"}},
+    # XP oturumunda boşta kalınca XP ekran koruyucusu çalışır (xp-ekrankoruyucu); Plasma'nın kilidi beklemez
+    "kscreenlockerrc": {"Daemon": {"Autolock": "false"}},
     "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},
     "Kvantum/kvantum.kvconfig": {"General": {"theme": "XPLuna"}},
     "konsolerc": {"Desktop Entry": {"DefaultProfile": "XP Komut İstemi.profile"}},
@@ -263,6 +265,23 @@ def birlestir(varsayilan, kayit, onceki=None):
     return out
 
 
+def masaustu_menusu():
+    """XP masaüstü bağlam menüsü: klasör eylemleri (Yeni, Yapıştır, Yenile, Simgeleri Yerleştir) ve Özellikler.
+    Plasma'nın XP'de olmayan öğeleri (Düzenleme Kipi, Etkinlikler, Ekran Yapılandırması, Terminal…) gizlenir.
+    Yalnızca XP kabuğunun kendi dosyasına yazılır; ATP etkilenmez."""
+    p = CFG / "plasma-io.github.yyozcan.xpshell-appletsrc"
+    if not p.exists():
+        return
+    kc = KConfig(p)
+    grup = "ActionPlugins][0][RightButton;NoModifier"
+    acik = {"_context", "configure", "_sep1", "_sep2", "_sep3", "_sep4"}
+    for k in ["_add panel", "_context", "_display_settings", "_lock_screen", "_logout", "_open_terminal",
+              "_run_command", "_sep1", "_sep2", "_sep3", "_sep4", "_wallpaper", "add widgets", "configure",
+              "configure shortcuts", "configureDisplays", "edit mode", "manage activities", "remove"]:
+        kc.set(grup, k, "true" if k in acik else "false")
+    kc.save()
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "durum"
     STATE.mkdir(parents=True, exist_ok=True)
@@ -275,6 +294,7 @@ def main():
         if xp.exists() and "--varsayilan" not in sys.argv:
             target = birlestir(target, json.loads(xp.read_text()), json.loads(onceki.read_text()))
         apply(target)
+        masaustu_menusu()
         print("XP teması uygulandı.")
     elif cmd == "geri":
         if not onceki.exists():

@@ -15,7 +15,7 @@ export WINEDEBUG=-all
 # Mono/Gecko kurulum pencereleri çıkmasın; MFC ve kart kitaplığı XP'ninki olsun
 export WINEDLLOVERRIDES="mscoree,mshtml=;mfc42u,mfc42,cards,getuname=n,b"
 PROG="$WINEPREFIX/drive_c/windows/xp"
-SURUM=3     # ön ek düzeni değişince artır
+SURUM=4     # ön ek düzeni değişince artır
 
 kur() {
     command -v wine >/dev/null || { echo "Wine kurulu değil (sudo pacman -S wine)" >&2; exit 1; }
@@ -31,6 +31,7 @@ kur() {
              mshearts.exe spider.exe cards.dll mfc42u.dll mfc42.dll getuname.dll; do
         [ -f "$XPD/ikon/$f" ] && cp -f "$XPD/ikon/$f" "$PROG/$f"
     done
+    cp -f "$XPD"/ekrankoruyucu/*.scr "$PROG/" 2>/dev/null
     if [ -f "$XPD/ikon/pinball.exe" ]; then
         cp -f "$XPD/ikon/pinball.exe" "$PROG/pinball/"
         cp -f "$XPD"/program/* "$PROG/pinball/" 2>/dev/null
@@ -68,6 +69,13 @@ EOF
 
 if [ "${1:-}" = "--kur" ]; then
     kur
+    exit 0
+fi
+# Görüntü Özellikleri renk düzenini değiştirince XP programları da aynı renkte görünsün
+if [ "${1:-}" = "--renk" ]; then
+    [ -f "$WINEPREFIX/system.reg" ] || exit 0
+    env -u DISPLAY -u WAYLAND_DISPLAY wine reg add 'HKCU\Software\Microsoft\Windows\CurrentVersion\ThemeManager' \
+        /v ColorName /d "${2:-NormalColor}" /f >/dev/null 2>&1
     exit 0
 fi
 [ "$(cat "$WINEPREFIX/.xp-surum" 2>/dev/null)" = "$SURUM" ] || kur

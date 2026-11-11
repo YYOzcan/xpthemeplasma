@@ -239,8 +239,11 @@ def varliklar(ms, xp, out):
 
 
 def main(xp, theme_out, varlik_out):
-    ms = Msstyles(str(Path(xp) / "stil/luna.msstyles"))
+    import varyant
+    gd.NAME = varyant.ad("XP-Luna", "-")
+    ms = Msstyles(str(Path(xp) / "stil/luna.msstyles"), varyant.MS)
     desktoptheme(ms, theme_out)
+    varyant.dizini_cevir(Path(theme_out) / gd.NAME, varyant.tablo(str(Path(xp) / "stil/luna.msstyles")))
     varliklar(ms, xp, varlik_out)
 
 

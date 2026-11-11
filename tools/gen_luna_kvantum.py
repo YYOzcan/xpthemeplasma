@@ -45,7 +45,9 @@ def ind(sheet, eid, img):
 
 
 def main(msstyles, out):
-    ms = Msstyles(msstyles)
+    import varyant
+    gk.NAME = varyant.ad("XPLuna")
+    ms = Msstyles(msstyles, varyant.MS)
     d = Path(out) / gk.NAME
     d.mkdir(parents=True, exist_ok=True)
     s = Sheet(scale=S, width=900)
@@ -180,6 +182,7 @@ def main(msstyles, out):
     cfg = cfg.replace("comment=Windows XP Luna (Mavi) — sıfırdan çizilmiş Kvantum teması",
                       "comment=Windows XP Luna (Mavi) — luna.msstyles'tan üretildi")
     (d / f"{gk.NAME}.kvconfig").write_text(cfg)
+    varyant.dizini_cevir(d, varyant.tablo(msstyles))
     print("kvantum (gerçek Luna) ->", d)
 
 

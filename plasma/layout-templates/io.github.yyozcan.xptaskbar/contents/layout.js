@@ -20,7 +20,7 @@ tasks.writeConfig("iconSpacing", "0");
 
 var tray = panel.addWidget("org.kde.plasma.systemtray");
 // Yalnızca stok KDE tepsi öğeleri (ATP'nin Win7 çatalları ikilenmesin)
-var trayItems = ["io.github.yyozcan.xpses", "org.kde.plasma.networkmanagement",
+var trayItems = ["io.github.yyozcan.xpses", "io.github.yyozcan.xpag",
                  "org.kde.plasma.bluetooth", "org.kde.plasma.battery",
                  "io.github.yyozcan.xpbalon", "org.kde.plasma.devicenotifier",
                  "org.kde.plasma.keyboardlayout", "org.kde.plasma.mediacontroller",
@@ -38,18 +38,11 @@ tray.writeConfig("knownItems", trayItems.concat([
     "io.gitgud.wackyideas.keyboardlayout", "org.kde.plasma.weather",
     "org.kde.plasma.dwellclicker", "org.kde.plasma.vault",
     // XP sürümleriyle değiştirilen stok öğeler
-    "org.kde.plasma.volume", "org.kde.plasma.notifications"]));
+    "org.kde.plasma.volume", "org.kde.plasma.notifications", "org.kde.plasma.networkmanagement"]));
 tray.writeConfig("hiddenItems", ["org.kde.plasma.clipboard", "org.kde.kdeconnect",
     "org.kde.kscreen", "org.kde.plasma.manage-inputmethod", "org.kde.plasma.keyboardindicator",
     "org.kde.plasma.printmanager", "org.kde.plasma.brightness"]);
 tray.writeConfig("iconSpacing", "1");
 
-var clock = panel.addWidget("org.kde.plasma.digitalclock");
-clock.currentConfigGroup = ["Appearance"];
-clock.writeConfig("showDate", "false");
-clock.writeConfig("showSeconds", "0");
-clock.writeConfig("use24hFormat", "2");
-clock.writeConfig("autoFontAndSize", "false");
-clock.writeConfig("fontFamily", "Tahoma");
-clock.writeConfig("fontSize", "8");
-clock.writeConfig("fontWeight", "400");
+// XP saati: üzerine gelince tarih, çift tıklayınca Tarih ve Saat Özellikleri
+panel.addWidget("io.github.yyozcan.xpsaat");

@@ -70,7 +70,7 @@ if [[ "${1:-}" == "--sistem" ]]; then
     # kendi XP kopyandan içe aktarılan logonui bitmap'leri (önce kullanıcı olarak: bash kur.sh)
     if ls build/varlik/logon-*.png >/dev/null 2>&1; then
         mkdir -p /usr/share/sddm/themes/xpthemeplasma/xp
-        cp build/varlik/logon-*.png /usr/share/sddm/themes/xpthemeplasma/xp/
+        cp build/varlik/logon-*.png build/varlik/kapat-*.png /usr/share/sddm/themes/xpthemeplasma/xp/
     fi
     chmod -R a+rX /usr/share/sddm/themes/xpthemeplasma
     echo "Oturum kuruldu: SDDM'de 'XPThemePlasma (Wayland)' seçilebilir."
@@ -85,8 +85,9 @@ BIN="$HOME/.local/bin"
 
 if [[ "${1:-}" == "--kaldir" ]]; then
     [[ -x "$BIN/xp-profil" ]] && "$BIN/xp-profil" geri || true
-    rm -rf "$DATA/aurorae/themes/XP-Luna" "$CFG/Kvantum/XPLuna" \
-           "$DATA/plasma/desktoptheme/XP-Luna" \
+    rm -rf "$DATA"/aurorae/themes/XP-Luna* "$CFG"/Kvantum/XPLuna* \
+           "$DATA"/plasma/desktoptheme/XP-Luna* "$DATA"/color-schemes/XPLuna*.colors \
+           "$DATA/plasma/plasmoids/io.github.yyozcan.xpsaat" "$DATA/plasma/plasmoids/io.github.yyozcan.xpag" \
            "$DATA/plasma/plasmoids/io.github.yyozcan.xpstart" \
            "$DATA/plasma/plasmoids/io.github.yyozcan.xppanel" \
            "$DATA/plasma/shells/io.github.yyozcan.xpshell" \
@@ -98,7 +99,7 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$BIN/xp-giris-sesi" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
            "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
-           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN"/xp-notdefteri "$BIN"/xp-gezgin "$BIN"/xp-denetim "$BIN"/xp-calistir "$BIN"/xp-sistem "$BIN"/xp-tarihsaat "$BIN"/xp-gorunum "$BIN"/xp-hakkinda "$BIN"/xp-gorev "$BIN"/xp-wine
+           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN"/xp-notdefteri "$BIN"/xp-gezgin "$BIN"/xp-denetim "$BIN"/xp-calistir "$BIN"/xp-sistem "$BIN"/xp-tarihsaat "$BIN"/xp-gorunum "$BIN"/xp-hakkinda "$BIN"/xp-gorev "$BIN"/xp-ag "$BIN"/xp-ekrankoruyucu "$BIN"/xp-wine
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -114,12 +115,19 @@ if [[ "${1:-}" == "--xp" ]]; then
     $PY tools/xp_iceaktar.py "$2"
 fi
 
-rm -rf build/aurorae build/kvantum build/desktoptheme build/varlik
+rm -rf build/aurorae build/kvantum build/desktoptheme build/varlik build/varlik-* build/color-schemes
 if [[ -f "$XPD/stil/luna.msstyles" ]]; then
     echo "==> Görseller gerçek XP varlıklarından üretiliyor ($XPD)"
-    $PY tools/gen_luna_aurorae.py "$XPD/stil/luna.msstyles" build/aurorae
-    $PY tools/gen_luna_kvantum.py "$XPD/stil/luna.msstyles" build/kvantum
-    $PY tools/gen_luna_plasma.py "$XPD" build/desktoptheme build/varlik
+    # XP'nin üç renk düzeni: Varsayılan (mavi), Zeytin Yeşili, Gümüş
+    for v in "" zeytin gumus; do
+        echo "    renk düzeni: ${v:-mavi}"
+        XP_VARYANT=$v $PY tools/gen_luna_aurorae.py "$XPD/stil/luna.msstyles" build/aurorae >/dev/null
+        XP_VARYANT=$v $PY tools/gen_luna_kvantum.py "$XPD/stil/luna.msstyles" build/kvantum >/dev/null
+        XP_VARYANT=$v $PY tools/gen_luna_plasma.py "$XPD" build/desktoptheme "build/varlik${v:+-$v}" >/dev/null
+        if [[ -n "$v" ]]; then
+            XP_VARYANT=$v $PY tools/gen_luna_renk.py "$XPD/stil/luna.msstyles" plasma/color_scheme/XPLuna.colors build/color-schemes >/dev/null
+        fi
+    done
     $PY tools/gen_luna_dlg.py "$XPD" build/varlik/dlg
     rm -rf build/wallpapers-xp && $PY tools/gen_luna_duvar.py "$XPD" build/wallpapers-xp
     $PY tools/gen_luna_plymouth.py build/varlik build/plymouth/xpthemeplasma "$XPD"
@@ -142,13 +150,27 @@ kopyala() {  # kopyala <kaynak> <hedef-dizin>
 }
 
 echo "==> Kuruluyor ($DATA, $CFG)"
-kopyala build/aurorae/XP-Luna "$DATA/aurorae/themes/XP-Luna"
-kopyala build/kvantum/XPLuna "$CFG/Kvantum/XPLuna"
-kopyala build/desktoptheme/XP-Luna "$DATA/plasma/desktoptheme/XP-Luna"
+for t in build/aurorae/*/; do kopyala "$t" "$DATA/aurorae/themes/$(basename "$t")"; done
+for t in build/kvantum/*/; do kopyala "$t" "$CFG/Kvantum/$(basename "$t")"; done
+for t in build/desktoptheme/*/; do kopyala "$t" "$DATA/plasma/desktoptheme/$(basename "$t")"; done
+for t in build/color-schemes/*.colors; do [[ -f "$t" ]] && install -Dm644 "$t" "$DATA/color-schemes/$(basename "$t")"; done
+# XP varlıkları: her renk düzeni ayrı dizinde, "varlik" etkin olana bağlantı (Görüntü Özellikleri değiştirir)
+XPV="$DATA/xpthemeplasma"
 if [[ -d build/varlik ]]; then
-    kopyala build/varlik "$DATA/xpthemeplasma/varlik"
+    aktif=$(basename "$(readlink "$XPV/varlik" 2>/dev/null)" 2>/dev/null)
+    [[ "$aktif" == varlik-* ]] || aktif=varlik-mavi
+    kopyala build/varlik "$XPV/varlik-mavi"
+    for v in zeytin gumus; do
+        if [[ -d "build/varlik-$v" ]]; then
+            kopyala "build/varlik-$v" "$XPV/varlik-$v"
+            cp -r build/varlik/dlg "$XPV/varlik-$v/dlg"
+        fi
+    done
+    [[ -d "$XPV/$aktif" ]] || aktif=varlik-mavi
+    rm -rf "$XPV/varlik"
+    ln -sfn "$aktif" "$XPV/varlik"
 else
-    rm -rf "$DATA/xpthemeplasma/varlik"
+    rm -rf "$XPV/varlik" "$XPV"/varlik-*
 fi
 for p in plasma/plasmoids/*/; do
     kopyala "$p" "$DATA/plasma/plasmoids/$(basename "$p")"
@@ -196,8 +218,10 @@ if command -v g++ >/dev/null && pkg-config --exists Qt6Widgets Qt6PrintSupport; 
     # dizin:ikili:Qt modülleri:ek bağlama
     UYG=("notdefteri:xp-notdefteri:Qt6Widgets Qt6PrintSupport:" "gezgin:xp-gezgin:Qt6Widgets:"
          "denetim:xp-denetim:Qt6Widgets:" "calistir:xp-calistir:Qt6Widgets:" "sistem:xp-sistem:Qt6Widgets:"
-         "tarihsaat:xp-tarihsaat:Qt6Widgets:" "gorunum:xp-gorunum:Qt6Widgets:" "hakkinda:xp-hakkinda:Qt6Widgets:")
+         "tarihsaat:xp-tarihsaat:Qt6Widgets:" "gorunum:xp-gorunum:Qt6Widgets:" "hakkinda:xp-hakkinda:Qt6Widgets:"
+         "ag:xp-ag:Qt6Widgets:")
     [[ -f /usr/include/taskmanager/tasksmodel.h ]] && UYG+=("gorev:xp-gorev:Qt6Widgets Qt6Network Qt6Qml:-ltaskmanager")
+    [[ -f /usr/include/KF6/KIdleTime/kidletime.h ]] && UYG+=("ekrankoruyucu:xp-ekrankoruyucu:Qt6Gui Qt6DBus:-I/usr/include/KF6/KIdleTime -lKF6IdleTime")
     for app in "${UYG[@]}"; do
         IFS=: read -r dizin ikili moduller ek <<< "$app"
         echo "    derleniyor: $ikili"
@@ -211,11 +235,17 @@ else
     echo "    (g++/Qt6 geliştirme dosyaları yok: XP programları derlenmedi)"
 fi
 install -Dm644 session/xp-ekran/xp-ekran.desktop "$XPAPP/xp-ekran.desktop"
+# XP terimleri (masaüstü menüsünde "Özellikler", "Yenile", "Yeni"…): yalnızca XP oturumunun çeviri katmanı
+if [[ -d /usr/share/locale/tr/LC_MESSAGES ]]; then
+    rm -rf "$DATA/xpthemeplasma/data/locale"
+    $PY tools/xp_ceviri.py "$DATA/xpthemeplasma/data/locale"
+fi
 
 # Gerçek XP programları (Wine ile, kendi XP kopyandan): Hesap Makinesi, Paint, WordPad, oyunlar…
 install -Dm755 session/xp-wine "$BIN/xp-wine"
 if [[ -f "$XPD/stil/luna.msstyles" ]] && command -v wine >/dev/null; then
     echo "==> Gerçek XP programları için Wine ön eki (ilk kurulumda ~15 sn)"
+    [[ -d "$XPD/ekrankoruyucu" ]] && $PY tools/xp_ekrankoruyucu.py "$XPD/ekrankoruyucu"
     "$BIN/xp-wine" --kur || echo "    Wine ön eki kurulamadı"
     wineapp() {  # exe desktop-kimliği ad açıklama kategori
         [[ -f "$XPD/ikon/$1" ]] || return 0
@@ -291,6 +321,18 @@ NoDisplay=true
 OnlyShowIn=KDE;
 X-KDE-autostart-phase=2
 EOD
+# XP ekran koruyucusu zamanlayıcısı (gerçek .scr'ler Wine ile)
+if [[ -x "$BIN/xp-ekrankoruyucu" ]] && command -v wine >/dev/null; then
+    cat > "$XDGK/autostart/xp-ekrankoruyucu.desktop" <<EOD
+[Desktop Entry]
+Type=Application
+Name=XP ekran koruyucusu
+Exec=$BIN/xp-ekrankoruyucu
+NoDisplay=true
+OnlyShowIn=KDE;
+X-KDE-autostart-phase=2
+EOD
+fi
 SIMGE="breeze"
 for t in "Windows 7 Aero" "Windows XP" "Windows-XP"; do
     if [[ -d "/usr/share/icons/$t" || -d "$DATA/icons/$t" ]]; then SIMGE="$t"; fi

@@ -13,7 +13,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from luna import Sheet  # noqa: E402
 from msstyles import Msstyles  # noqa: E402
 
-THEME = "XP-Luna"
+import varyant  # noqa: E402
+THEME = varyant.ad("XP-Luna", "-")
 B = 4            # görünen kenar kalınlığı (XP: 4)
 
 
@@ -117,7 +118,7 @@ def button_svg(imgs):
 
 
 def main(msstyles, out):
-    ms = Msstyles(msstyles)
+    ms = Msstyles(msstyles, varyant.MS)
     d = Path(out) / THEME
     d.mkdir(parents=True, exist_ok=True)
     s = Sheet(scale=1, width=600)
@@ -184,10 +185,11 @@ X-KDE-PluginInfo-Version=2.0
 X-KDE-PluginInfo-License=GPL-3.0-or-later
 """)
     (d / "metadata.json").write_text(json.dumps({
-        "KPlugin": {"Id": THEME, "Name": "XP Luna", "Version": "2.0",
+        "KPlugin": {"Id": THEME, "Name": "XP Luna" + varyant.AD, "Version": "2.0",
                     "Description": "Windows XP Luna (luna.msstyles'tan)",
                     "Authors": [{"Name": "XPThemePlasma"}]},
         "KPackageStructure": "KWin/Aurorae"}, indent=2, ensure_ascii=False))
+    varyant.dizini_cevir(d, varyant.tablo(msstyles))
     print("aurorae (gerçek Luna) ->", d)
 
 

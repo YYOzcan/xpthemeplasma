@@ -31,7 +31,8 @@ struct Modul {
     }
     bool gecerli() const { return !veri.isEmpty(); }
     QString dize(int id, const QString &yedek = {}) const {
-        const QString s = veri.value("strings").toObject().value(QString::number(id)).toString();
+        QString s = veri.value("strings").toObject().value(QString::number(id)).toString();
+        s.remove(QChar(0));
         return s.isEmpty() ? yedek : s;
     }
     QJsonObject dialog(int id) const { return veri.value("dialogs").toObject().value(QString::number(id)).toObject(); }
@@ -78,6 +79,9 @@ public:
                     auto *b = new QPushButton(t, this);
                     b->setDefault(tur == 1);
                     b->setAutoDefault(false);
+                    // yazı tipi ölçüleri XP'ninkinden birkaç piksel genişse metin kırpılmasın
+                    const int gerek = b->fontMetrics().horizontalAdvance(sade(t)) + 20;
+                    if (gerek > r.width()) r.setWidth(gerek);
                     w = b;
                 } else if (tur == 2 || tur == 3 || tur == 5 || tur == 6) {
                     auto *b = new QCheckBox(t, this);
@@ -131,6 +135,15 @@ public:
                     if (tur == 0x10) { f->setFrameShape(QFrame::HLine); f->setFrameShadow(QFrame::Sunken); r.setHeight(2); }
                     else if (tur == 0x11) { f->setFrameShape(QFrame::VLine); f->setFrameShadow(QFrame::Sunken); r.setWidth(2); }
                     else if (tur == 0x12) { f->setFrameShape(QFrame::Box); f->setFrameShadow(QFrame::Sunken); }
+                    else if (c.value("h").toInt() <= 1 || c.value("w").toInt() <= 1) {
+                        // 1 birimlik SS_*FRAME/RECT: ince çizgi (ör. ağ durumundaki "Gönderilen ── ▣ ── Alınan")
+                        const QColor renk = (tur == 4 || tur == 7) ? QColor(0, 0, 0) : (tur == 6 || tur == 9) ? QColor(255, 255, 255) : QColor(128, 128, 128);
+                        f->setAutoFillBackground(true);
+                        QPalette pal = f->palette();
+                        pal.setColor(QPalette::Window, renk);
+                        f->setPalette(pal);
+                        if (c.value("h").toInt() <= 1) r.setHeight(1); else r.setWidth(1);
+                    }
                     else f->setFrameShape(QFrame::Box);
                     w = f;
                 } else if (tur == 0xD) {

@@ -12,6 +12,14 @@ SCALE = 2
 NAME = "XP-Luna"
 
 
+def _ad_eki():
+    try:
+        import varyant
+        return varyant.AD
+    except ImportError:
+        return ""
+
+
 def rr(x, y, w, h, r):
     return rrect_path(x, y, w, h, r, r, r, r)
 
@@ -268,7 +276,7 @@ def main(out):
     (d / "metadata.json").write_text(json.dumps({
         "KPackageStructure": "Plasma/Theme",
         "KPlugin": {
-            "Id": NAME, "Name": "XP Luna", "Name[tr]": "XP Luna",
+            "Id": NAME, "Name": "XP Luna" + _ad_eki(), "Name[tr]": "XP Luna" + _ad_eki(),
             "Description": "Windows XP Luna (Mavi) biçemli Plasma teması",
             "Description[tr]": "Windows XP Luna (Mavi) biçemli Plasma teması",
             "License": "GPL-3.0-or-later", "Version": "1.0",

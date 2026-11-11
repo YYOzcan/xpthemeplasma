@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Yerel Ağ Bağlantısı Durumu
+Exec=xp-ag
+Icon=xp-ag-bos
+NoDisplay=true
+Categories=Network;

@@ -31,6 +31,7 @@ MODULLER = {
     "shell32.dll": dict(dlg=[1003, 29952, 29953], str=list(range(8960, 8976)) + [60, 4097, 4098, 4099, 4100], menu=False,
                         bmp=[], ico=[160]),
     "winver.exe": dict(dlg=None, str=None, menu=False, bmp=[], ico=[]),
+    "netshell.dll": dict(dlg=[1802, 1806, 1807], str=None, menu=False, bmp=[], ico=[210, 190, 191, 192, 193, 195, 196]),
 }
 
 
@@ -212,7 +213,7 @@ def main(xp, out):
                 except Exception as e:
                     print(f"  {ad} menü {n}: {e}")
         dizeler = r.strings()
-        mod["strings"] = {str(k): v for k, v in dizeler.items() if sec["str"] is None or k in sec["str"]}
+        mod["strings"] = {str(k): v.rstrip("\x00") for k, v in dizeler.items() if sec["str"] is None or k in sec["str"]}
         stem = ad.replace(".", "-")
         (out / f"{stem}.json").write_text(json.dumps(mod, ensure_ascii=False, separators=(",", ":")))
         # simgeler: istenenler (None = hepsi), 32 ve 16 piksel
