@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Çalıştır...
+Comment=Bir programı, klasörü, belgeyi veya Web sitesini açar.
+Exec=xp-calistir
+Icon=system-run
+NoDisplay=true
+Categories=System;
+X-KDE-Shortcuts=Meta+R

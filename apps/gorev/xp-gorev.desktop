@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Görev Yöneticisi
+GenericName=Windows Görev Yöneticisi
+Comment=Bilgisayarınızda çalışan programlar ve işlemler hakkında ayrıntılar sağlar.
+Exec=xp-gorev
+Icon=xp-gorev
+NoDisplay=true
+Categories=System;Monitor;
+X-KDE-Wayland-Interfaces=org_kde_plasma_window_management
+X-KDE-Shortcuts=Ctrl+Shift+Esc

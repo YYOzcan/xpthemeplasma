@@ -791,7 +791,7 @@ PlasmaCore.Dialog {
                             }
                             RightItem {
                                 text: i18n("Run…"); iconName: "system-run"
-                                onActivated: menu.run({ "cmd": "krunner" })
+                                onActivated: menu.run({ "cmd": "xp-calistir" })
                             }
                             Item { Layout.fillHeight: true }
                         }

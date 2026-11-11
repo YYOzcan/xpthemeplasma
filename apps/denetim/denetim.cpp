@@ -19,9 +19,16 @@ static bool kcmVar(const QString &ad) {
     return false;
 }
 
+// PATH'te ~/.local/bin olmasa da XP programları bulunsun
+static QString bul(const QString &prog) {
+    QString p = QStandardPaths::findExecutable(prog);
+    if (p.isEmpty()) p = QStandardPaths::findExecutable(prog, {QDir::homePath() + "/.local/bin"});
+    return p;
+}
+
 static bool calisabilir(const QString &komut) {
     if (komut.startsWith("kcm:")) return kcmVar(komut.mid(4));
-    return !QStandardPaths::findExecutable(komut.split(' ').first()).isEmpty();
+    return !bul(komut.split(' ').first()).isEmpty();
 }
 
 static void calistir(const QString &komut) {
@@ -29,7 +36,8 @@ static void calistir(const QString &komut) {
         QProcess::startDetached("kcmshell6", {komut.mid(4)});
     } else {
         QStringList p = QProcess::splitCommand(komut);
-        QProcess::startDetached(p.takeFirst(), p);
+        const QString prog = p.takeFirst();
+        QProcess::startDetached(bul(prog).isEmpty() ? prog : bul(prog), p);
     }
 }
 
@@ -42,11 +50,11 @@ static QString paketYoneticisi() {
 static QList<Kategori> kategoriler() {
     QList<Kategori> l;
     l.append({"Görünüm ve Temalar", "preferences-desktop-theme",
-              {{"Bilgisayarın temasını değiştir", "kcm:kcm_lookandfeel"},
-               {"Masaüstü arka planını değiştir", "kcm:kcm_wallpaper"},
-               {"Ekran koruyucu seçin", "kcm:kcm_screenlocker"},
-               {"Ekran çözünürlüğünü değiştir", "kcm:kcm_kscreen"}},
-              {{"Görüntü", "video-display", "kcm:kcm_kscreen"},
+              {{"Bilgisayarın temasını değiştir", "xp-gorunum ,,0"},
+               {"Masaüstü arka planını değiştir", "xp-gorunum ,,1"},
+               {"Ekran koruyucu seçin", "xp-gorunum ,,2"},
+               {"Ekran çözünürlüğünü değiştir", "xp-gorunum ,,4"}},
+              {{"Görüntü", "preferences-desktop-display", "xp-gorunum"},
                {"Görev Çubuğu ve Başlat Menüsü", "preferences-desktop-taskbar", "kcm:kcm_workspace"},
                {"Yazı Tipleri", "preferences-desktop-font", "kcm:kcm_fonts"},
                {"Pencere Çerçeveleri", "preferences-desktop-theme", "kcm:kcm_kwindecoration"},
@@ -72,9 +80,9 @@ static QList<Kategori> kategoriler() {
               {{"Bu bilgisayarla ilgili bilgileri görün", "kinfocenter"},
                {"Sabit diskte yer açın", "filelight"},
                {"Güç seçeneklerini ayarlayın", "kcm:kcm_powerdevilprofilesconfig"}},
-              {{"Sistem", "computer", "kinfocenter"},
+              {{"Sistem", "computer", "xp-sistem"},
                {"Güç Seçenekleri", "preferences-system-power-management", "kcm:kcm_powerdevilprofilesconfig"},
-               {"Yönetimsel Araçlar", "utilities-system-monitor", "plasma-systemmonitor"},
+               {"Yönetimsel Araçlar", "utilities-system-monitor", "xp-gorev"},
                {"Başlangıç Programları", "system-run", "kcm:kcm_autostart"},
                {"Oturum Yönetimi", "system-log-out", "kcm:kcm_smserver"}}});
     l.append({"Yazıcılar ve Diğer Donanım", "preferences-desktop-peripherals",
@@ -92,9 +100,9 @@ static QList<Kategori> kategoriler() {
               {{"Bir hesabı değiştirin", "kcm:kcm_users"}, {"Yeni hesap oluşturun", "kcm:kcm_users"}},
               {{"Kullanıcı Hesapları", "system-users", "kcm:kcm_users"}}});
     l.append({"Tarih, Saat, Dil ve Bölge Seçenekleri", "preferences-system-time",
-              {{"Tarihi ve saati değiştirin", "kcm:kcm_clock"},
+              {{"Tarihi ve saati değiştirin", "xp-tarihsaat"},
                {"Sayıların, tarihlerin ve saatlerin biçimini değiştirin", "kcm:kcm_regionandlang"}},
-              {{"Tarih ve Saat", "preferences-system-time", "kcm:kcm_clock"},
+              {{"Tarih ve Saat", "preferences-system-time", "xp-tarihsaat"},
                {"Bölge ve Dil Seçenekleri", "preferences-desktop-locale", "kcm:kcm_regionandlang"}}});
     l.append({"Erişilebilirlik Seçenekleri", "preferences-desktop-accessibility",
               {{"Erişilebilirlik ayarlarını yapın", "kcm:kcm_access"}},

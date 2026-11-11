@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Sistem
+GenericName=Sistem Özellikleri
+Comment=Bilgisayarınızla ilgili bilgileri görün ve sistem ayarlarını değiştirin.
+Exec=xp-sistem %u
+Icon=computer
+NoDisplay=true
+Categories=Settings;System;
+X-KDE-Shortcuts=Meta+Pause

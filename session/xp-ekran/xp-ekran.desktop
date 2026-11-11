@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Ekranı Panoya Kopyala
+Comment=XP: Print Screen ekranın, Alt+Print Screen etkin pencerenin görüntüsünü sessizce panoya kopyalar.
+Exec=spectacle -b -n -f -c
+Icon=applets-screenshooter
+NoDisplay=true
+Actions=Pencere;
+X-KDE-Shortcuts=Print
+
+[Desktop Action Pencere]
+Name=Etkin Pencereyi Panoya Kopyala
+Exec=spectacle -b -n -a -c
+X-KDE-Shortcuts=Alt+Print

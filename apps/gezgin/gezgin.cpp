@@ -270,7 +270,9 @@ private:
         yardim->addAction("Yardım ve Destek Merkezi", this, [] { QProcess::startDetached("khelpcenter", {}); });
         yardim->addSeparator();
         yardim->addAction("&Windows Gezgini Hakkında", this, [this] {
-            QMessageBox::about(this, "Windows Gezgini Hakkında", "<b>Windows Gezgini</b><br>XPThemePlasma");
+            const QString h = QDir::homePath() + "/.local/bin/xp-hakkinda";
+            if (QFileInfo(h).isExecutable()) QProcess::startDetached(h, {"Windows Gezgini"});
+            else QMessageBox::about(this, "Windows Gezgini Hakkında", "<b>Windows Gezgini</b><br>XPThemePlasma");
         });
     }
 

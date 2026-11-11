@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Tarih ve Saat
+GenericName=Tarih ve Saat Özellikleri
+Comment=Bilgisayarınızın tarih, saat ve saat dilimi bilgilerini ayarlayın.
+Exec=xp-tarihsaat %u
+Icon=preferences-system-time
+NoDisplay=true
+Categories=Settings;System;

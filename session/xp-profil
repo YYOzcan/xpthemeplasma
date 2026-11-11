@@ -59,6 +59,21 @@ YONETILEN = {
     "ksplashrc": {"KSplash": {"Theme": "io.github.yyozcan.xpluna", "Engine": "KSplashQML"}},
     "Kvantum/kvantum.kvconfig": {"General": {"theme": "XPLuna"}},
     "konsolerc": {"Desktop Entry": {"DefaultProfile": "XP Komut İstemi.profile"}},
+    # XP kısayolları: Ctrl+Alt+Del / Ctrl+Shift+Esc Görev Yöneticisi, Windows+R Çalıştır, Windows+E Gezgin,
+    # Windows+Pause Sistem Özellikleri, Print Screen sessizce panoya, Hesap Makinesi tuşu XP Hesap Makinesi
+    "kglobalshortcutsrc": {
+        "ksmserver": {"Log Out": "none,Ctrl+Alt+Del,Oturumu Kapat Ekranını Göster"},
+        "services][xp-gorev.desktop": {"_launch": "Ctrl+Shift+Esc\\tCtrl+Alt+Del"},
+        "services][xp-calistir.desktop": {"_launch": "Meta+R"},
+        "services][xp-gezgin.desktop": {"_launch": "Meta+E"},
+        "services][xp-sistem.desktop": {"_launch": "Meta+Pause"},
+        "services][xp-ekran.desktop": {"_launch": "Print", "Pencere": "Alt+Print"},
+        "services][xp-calc.desktop": {"_launch": "Calculator"},
+        "services][org.kde.dolphin.desktop": {"_launch": "none"},
+        "services][org.kde.kcalc.desktop": {"_launch": "none"},
+        "services][org.kde.plasma-systemmonitor.desktop": {"_launch": "none"},
+        "services][org.kde.spectacle.desktop": {"_launch": "Meta+Shift+S", "RecordRegion": "Meta+Shift+R"},
+    },
     "mimeapps.list": {"Default Applications": {"text/plain": "xp-notdefteri.desktop",
                                                "inode/directory": "xp-gezgin.desktop"}},
 }

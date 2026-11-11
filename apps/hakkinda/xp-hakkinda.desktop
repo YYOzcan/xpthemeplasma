@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Windows Hakkında
+Exec=xp-hakkinda
+Icon=help-about
+NoDisplay=true
+Categories=System;

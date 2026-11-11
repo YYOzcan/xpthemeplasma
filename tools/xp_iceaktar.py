@@ -30,7 +30,10 @@ sndrec32.exe narrator.exe utilman.exe accwiz.exe cdplayer.exe mspaint.exe shimgv
 cabview.dll url.dll mydocs.dll syncui.dll dfrgres.dll compstui.dll ntbackup.exe migwiz.exe
 wiashext.dll sti.dll mmcndmgr.dll comres.dll pifmgr.dll setupapi.dll mmc.exe eventvwr.exe
 devmgr.dll themeui.dll printui.dll netplwiz.dll wlanui.dll xpsp1res.dll ole2.dll browseui.dll
-shdoclc.dll webcheck.dll msgina.dll winlogon.exe winver.exe""".split()
+shdoclc.dll webcheck.dll msgina.dll winlogon.exe winver.exe cards.dll mfc42u.dll mfc42.dll getuname.dll
+pinball.exe""".split()
+# Wine ile çalışan gerçek XP programlarının veri dosyaları (3D Pinball)
+PROGRAM = """pinball.dat font.dat pinball.mid pinball2.mid wavemix.inf table.bmp""".split()
 FONT = """tahoma.ttf tahomabd.ttf trebuc.ttf trebucbd.ttf trebucit.ttf trebucbi.ttf framd.ttf framdit.ttf
 lucon.ttf verdana.ttf verdanab.ttf verdanai.ttf verdanaz.ttf micross.ttf marlett.ttf arial.ttf
 arialbd.ttf ariali.ttf arialbi.ttf ariblk.ttf times.ttf timesbd.ttf timesi.ttf timesbi.ttf cour.ttf
@@ -108,7 +111,7 @@ def main():
         # 8.3 adlı CAB içerikleri için (luna.mst gibi) — doğrudan aç
         if HEDEF.exists():
             shutil.rmtree(HEDEF)
-        gruplar = {"stil": STIL, "ikon": IKON, "font": FONT, "duvar": DUVAR}
+        gruplar = {"stil": STIL, "ikon": IKON, "font": FONT, "duvar": DUVAR, "program": PROGRAM}
         sayac = {}
         for grup, adlar in gruplar.items():
             out = HEDEF / grup

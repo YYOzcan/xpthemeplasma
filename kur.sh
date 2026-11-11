@@ -32,6 +32,9 @@ if [[ "${1:-}" == "--plymouth" || "${1:-}" == "--plymouth-geri" ]]; then
     fi
     [[ -f build/plymouth/xpthemeplasma/boot.png ]] || { echo "Önce kullanıcı olarak: bash $0 --xp <ISO>" >&2; exit 1; }
     onceki=$(plymouth-set-default-theme 2>/dev/null || true)
+    # yeniden kurulumda önceki temanın kaydı (.onceki) kaybolmasın
+    [[ "$onceki" == "xpthemeplasma" ]] && onceki=$(cat /usr/share/plymouth/themes/xpthemeplasma/.onceki 2>/dev/null || true)
+    [[ -z "$onceki" && -f /etc/plymouth/plymouthd.confe ]] && onceki=$(sed -n 's/^Theme=//p' /etc/plymouth/plymouthd.confe | head -1)
     rm -rf /usr/share/plymouth/themes/xpthemeplasma
     cp -r build/plymouth/xpthemeplasma /usr/share/plymouth/themes/xpthemeplasma
     [[ "$onceki" != "xpthemeplasma" && -n "$onceki" ]] && echo "$onceki" > /usr/share/plymouth/themes/xpthemeplasma/.onceki
@@ -95,7 +98,7 @@ if [[ "${1:-}" == "--kaldir" ]]; then
            "$CFG/plasma-workspace/env/xpthemeplasma.sh" "$BIN/xp-profil" "$BIN/xp-oturum" "$BIN/xp-giris-sesi" "$DATA/xpthemeplasma" \
            "$DATA/icons/Windows XP" "$DATA/sounds/Windows XP" "$DATA/fonts/xpthemeplasma" \
            "$DATA/konsole/XP Komut İstemi.profile" "$DATA/konsole/XPCmd.colorscheme" \
-           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN/xp-notdefteri" "$BIN/xp-gezgin" "$BIN/xp-denetim"
+           "$DATA/kwin/tabbox/xp_alttab" "$DATA/kwin/effects/xp_gri" "$BIN"/xp-notdefteri "$BIN"/xp-gezgin "$BIN"/xp-denetim "$BIN"/xp-calistir "$BIN"/xp-sistem "$BIN"/xp-tarihsaat "$BIN"/xp-gorunum "$BIN"/xp-hakkinda "$BIN"/xp-gorev "$BIN"/xp-wine
     sed -i '/>>> XPThemePlasma XP_CMD >>>/,/<<< XPThemePlasma XP_CMD <<</d' "$HOME/.bashrc"
     echo "Kullanıcı dosyaları kaldırıldı. Sistem kısmı için:"
     echo "  sudo rm -rf /usr/local/bin/startxp-wayland /usr/share/wayland-sessions/xpthemeplasma.desktop \\"
@@ -117,6 +120,7 @@ if [[ -f "$XPD/stil/luna.msstyles" ]]; then
     $PY tools/gen_luna_aurorae.py "$XPD/stil/luna.msstyles" build/aurorae
     $PY tools/gen_luna_kvantum.py "$XPD/stil/luna.msstyles" build/kvantum
     $PY tools/gen_luna_plasma.py "$XPD" build/desktoptheme build/varlik
+    $PY tools/gen_luna_dlg.py "$XPD" build/varlik/dlg
     rm -rf build/wallpapers-xp && $PY tools/gen_luna_duvar.py "$XPD" build/wallpapers-xp
     $PY tools/gen_luna_plymouth.py build/varlik build/plymouth/xpthemeplasma "$XPD"
     rm -rf build/icons build/sounds
@@ -154,6 +158,13 @@ kopyala kwin/effects/xp_gri "$DATA/kwin/effects/xp_gri"
 kopyala plasma/shells/io.github.yyozcan.xpshell "$DATA/plasma/shells/io.github.yyozcan.xpshell"
 kopyala plasma/layout-templates/io.github.yyozcan.xptaskbar "$DATA/plasma/layout-templates/io.github.yyozcan.xptaskbar"
 kopyala plasma/look-and-feel/io.github.yyozcan.xpluna "$DATA/plasma/look-and-feel/io.github.yyozcan.xpluna"
+# gerçek XP kipinde varsayılan duvar kağıdı XP'deki gibi Bliss
+if [[ -d build/wallpapers-xp/XP-Bliss && -f "$XPD/stil/luna.msstyles" ]]; then
+    sed -i 's|wallpapers/XPThemePlasma/|wallpapers/XP-Bliss/|' \
+        "$DATA/plasma/shells/io.github.yyozcan.xpshell/contents/layout.js" \
+        "$DATA/plasma/look-and-feel/io.github.yyozcan.xpluna/contents/layouts/io.github.yyozcan.xpshell-layout.js"
+    sed -i 's|^Image=XPThemePlasma$|Image=XP-Bliss|' "$DATA/plasma/look-and-feel/io.github.yyozcan.xpluna/contents/defaults"
+fi
 install -Dm644 plasma/color_scheme/XPLuna.colors "$DATA/color-schemes/XPLuna.colors"
 kopyala build/wallpapers/XPThemePlasma "$DATA/wallpapers/XPThemePlasma"
 if [[ -d build/wallpapers-xp && -f "$XPD/stil/luna.msstyles" ]]; then
@@ -179,19 +190,78 @@ fi
 
 echo "==> XP programları (yalnızca XP oturumunda görünür)"
 XPAPP="$DATA/xpthemeplasma/data/applications"
+rm -rf "$XPAPP"
 mkdir -p "$XPAPP" build/bin
 if command -v g++ >/dev/null && pkg-config --exists Qt6Widgets Qt6PrintSupport; then
-    for app in notdefteri:xp-notdefteri:"Qt6Widgets Qt6PrintSupport" gezgin:xp-gezgin:Qt6Widgets denetim:xp-denetim:Qt6Widgets; do
-        IFS=: read -r dizin ikili moduller <<< "$app"
-        moduller=${moduller//\"/}
+    # dizin:ikili:Qt modülleri:ek bağlama
+    UYG=("notdefteri:xp-notdefteri:Qt6Widgets Qt6PrintSupport:" "gezgin:xp-gezgin:Qt6Widgets:"
+         "denetim:xp-denetim:Qt6Widgets:" "calistir:xp-calistir:Qt6Widgets:" "sistem:xp-sistem:Qt6Widgets:"
+         "tarihsaat:xp-tarihsaat:Qt6Widgets:" "gorunum:xp-gorunum:Qt6Widgets:" "hakkinda:xp-hakkinda:Qt6Widgets:")
+    [[ -f /usr/include/taskmanager/tasksmodel.h ]] && UYG+=("gorev:xp-gorev:Qt6Widgets Qt6Network Qt6Qml:-ltaskmanager")
+    for app in "${UYG[@]}"; do
+        IFS=: read -r dizin ikili moduller ek <<< "$app"
         echo "    derleniyor: $ikili"
-        g++ -std=c++17 -O2 -fPIC "apps/$dizin/$dizin.cpp" -o "build/bin/$ikili" $(pkg-config --cflags --libs $moduller) \
+        # shellcheck disable=SC2086
+        g++ -std=c++17 -O2 -fPIC "apps/$dizin/$dizin.cpp" -o "build/bin/$ikili" $(pkg-config --cflags --libs $moduller) $ek \
             && install -Dm755 "build/bin/$ikili" "$BIN/$ikili" \
-            && install -Dm644 "apps/$dizin/$ikili.desktop" "$XPAPP/$ikili.desktop"
+            && install -Dm644 "apps/$dizin/$ikili.desktop" "$XPAPP/$ikili.desktop" \
+            && sed -i "s|^Exec=$ikili|Exec=$BIN/$ikili|" "$XPAPP/$ikili.desktop"
     done
 else
     echo "    (g++/Qt6 geliştirme dosyaları yok: XP programları derlenmedi)"
 fi
+install -Dm644 session/xp-ekran/xp-ekran.desktop "$XPAPP/xp-ekran.desktop"
+
+# Gerçek XP programları (Wine ile, kendi XP kopyandan): Hesap Makinesi, Paint, WordPad, oyunlar…
+install -Dm755 session/xp-wine "$BIN/xp-wine"
+if [[ -f "$XPD/stil/luna.msstyles" ]] && command -v wine >/dev/null; then
+    echo "==> Gerçek XP programları için Wine ön eki (ilk kurulumda ~15 sn)"
+    "$BIN/xp-wine" --kur || echo "    Wine ön eki kurulamadı"
+    wineapp() {  # exe desktop-kimliği ad açıklama kategori
+        [[ -f "$XPD/ikon/$1" ]] || return 0
+        cat > "$XPAPP/$2.desktop" <<EOD
+[Desktop Entry]
+Type=Application
+Name=$3
+Comment=$4
+Exec=$BIN/xp-wine $1 %f
+Icon=$2
+Categories=$5
+StartupWMClass=$1
+X-XPThemePlasma=wine
+EOD
+    }
+    wineapp calc.exe xp-calc "Hesap Makinesi" "Hesap makinesini kullanarak temel aritmetik işlemleri yapar." "Utility;Calculator;"
+    wineapp mspaint.exe xp-mspaint "Paint" "Çizim oluşturur ve düzenler; taranmış resimleri görüntüler ve düzenler." "Graphics;2DGraphics;"
+    wineapp wordpad.exe xp-wordpad "WordPad" "Karmaşık biçimlendirmeyle metin belgeleri oluşturur ve düzenler." "Office;WordProcessor;"
+    wineapp charmap.exe xp-charmap "Karakter Eşlem" "Özel karakterleri seçer ve belgenize kopyalar." "Utility;"
+    wineapp sndrec32.exe xp-sndrec32 "Ses Kaydedicisi" "Ses kaydeder." "AudioVideo;Audio;"
+    wineapp winmine.exe xp-winmine "Mayın Tarlası" "Mayınlara basmadan mayın tarlasını temizleyin." "Game;LogicGame;"
+    wineapp sol.exe xp-sol "Solitaire" "Klasik Solitaire kart oyununu oynayın." "Game;CardGame;"
+    wineapp freecell.exe xp-freecell "FreeCell" "Solitaire'in FreeCell sürümünü oynayın." "Game;CardGame;"
+    wineapp mshearts.exe xp-mshearts "Hearts" "Hearts kart oyununu oynayın." "Game;CardGame;"
+    wineapp spider.exe xp-spider "Örümcek Solitaire" "Örümcek Solitaire kart oyununu oynayın." "Game;CardGame;"
+    wineapp pinball.exe xp-pinball "Pinball" "3D Pinball oyununu oynayın." "Game;ArcadeGame;"
+fi
+
+# XP oturumunda KDE karşılıkları menülerde gizlensin (yalnızca bu oturumun XDG_DATA_DIRS katmanında)
+gizle() {  # gizle <desktop-kimliği> [yalnızca şu XP karşılığı varsa]
+    local kaynak="/usr/share/applications/$1.desktop"
+    [[ -f "$kaynak" ]] || return 0
+    [[ -n "${2:-}" && ! -f "$XPAPP/$2.desktop" ]] && return 0
+    sed '/^NoDisplay=/d; /^\[Desktop Entry\]/a NoDisplay=true' "$kaynak" > "$XPAPP/$1.desktop"
+}
+gizle org.kde.kcalc xp-calc
+gizle org.kde.kwrite xp-notdefteri
+gizle org.kde.plasma-systemmonitor xp-gorev
+gizle org.kde.dolphin xp-gezgin
+gizle systemsettings xp-denetim
+gizle kdesystemsettings xp-denetim
+gizle org.kde.kcharselect xp-charmap
+gizle org.kde.kolourpaint xp-mspaint
+gizle org.kde.kmines xp-winmine
+gizle org.kde.kpat xp-sol
+command -v kbuildsycoca6 >/dev/null && XDG_DATA_DIRS="$DATA/xpthemeplasma/data:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}" kbuildsycoca6 >/dev/null 2>&1 || true
 
 echo "==> Komut İstemi (XP) ve yazı tipi işleme"
 mkdir -p "$DATA/konsole"

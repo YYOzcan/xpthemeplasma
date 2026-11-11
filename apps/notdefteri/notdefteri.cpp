@@ -72,7 +72,9 @@ public:
         eylem(yardim, "&Yardım Konuları", {}, [] { QDesktopServices::openUrl(QUrl("help:/")); });
         yardim->addSeparator();
         eylem(yardim, "Not Defteri &Hakkında", {}, [this] {
-            QMessageBox::about(this, "Not Defteri Hakkında",
+            const QString h = QDir::homePath() + "/.local/bin/xp-hakkinda";
+            if (QFileInfo(h).isExecutable()) QProcess::startDetached(h, {"Not Defteri"});
+            else QMessageBox::about(this, "Not Defteri Hakkında",
                                "<b>Not Defteri</b><br>XPThemePlasma<br><br>Windows XP Not Defteri benzeri metin düzenleyici.");
         });
 

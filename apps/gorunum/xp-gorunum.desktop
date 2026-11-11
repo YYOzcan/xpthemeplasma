@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Görüntü
+GenericName=Görüntü Özellikleri
+Comment=Masaüstü arka planınızı, ekran koruyucunuzu, renk düzeninizi veya ekran çözünürlüğünüzü değiştirin.
+Exec=xp-gorunum %u
+Icon=preferences-desktop-display
+NoDisplay=true
+Categories=Settings;

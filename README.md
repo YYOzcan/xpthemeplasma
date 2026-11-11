@@ -42,7 +42,7 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 | **XP Paneli** (kapsayıcı) | ATP panelinin çatalı: bildirim alanının arkasına XP'nin açık mavi tepsisini çizer, panel yazılarını beyaz yapar | `plasma/plasmoids/io.github.yyozcan.xppanel` |
 | **XP Kabuğu** + yerleşim | İlk açılışta: başlat · görevler · tepsi · saat (Tahoma 8) | `plasma/shells`, `plasma/layout-templates` |
 | **XP Luna** (Görünüm ve His) | XP açılış ekranı (siyah zemin, kayan üç mavi blok) | `plasma/look-and-feel` |
-| **Bilgisayarı Kapat** | XP'nin Bekleme / Kapat / Yeniden Başlat ve Kilitle / Oturumu Kapat pencereleri (otomatik geri sayım yok) | `plasma/shells/…/contents/logout` |
+| **Bilgisayarı Kapat** | XP'nin Bekleme / Kapat / Yeniden Başlat ve Kullanıcı Değiştir / Oturumu Kapat pencereleri (gerçek kipte `msgina.dll` ve `shell32.dll` bitmap'leri, sarı balon ipuçları, ÜstKrkt ile Hazırda Beklet); arkada masaüstü yavaşça griye döner; seçimden sonra "Ayarlarınız kaydediliyor…" / "Windows kapatılıyor…" ekranı ve XP kapanış sesi | `plasma/shells/…/contents/logout`, `kwin/effects/xp_gri` |
 | **Hoş geldiniz** (SDDM) | XP karşılama ekranı: kullanıcı kutucukları, yeşil ok, Bilgisayarı kapat, oturum seçici | `sddm/xpthemeplasma` |
 | **Tepe** duvar kağıdı | Bliss'ten esinlenmiş, prosedürel yeşil tepe + mavi gök | `tools/gen_wallpaper.py` |
 | **XPLuna** renk şeması | `#ECE9D8` yüzey, `#316AC5` seçim | `plasma/color_scheme` |
@@ -51,7 +51,16 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 | **Ses Düzeyi** | Tepsideki XP ses penceresi: "Ses Düzeyi", XP kaydırıcısı, "Sessiz"; tekerlekle ses, orta tıkla sessiz | `plasma/plasmoids/io.github.yyozcan.xpses` |
 | **Bildirim balonları** | Bildirimler XP'nin sarı tepsi balonları olarak (kuyruk, XP kapatma düğmesi, balon sesi) | `plasma/plasmoids/io.github.yyozcan.xpbalon` |
 | **Hoş Geldiniz** | Oturum açılınca masaüstü yüklenirken XP'nin "Hoş Geldiniz" ekranı | `look-and-feel/.../splash` |
-| **Plymouth** | Bilgisayar açılırken XP açılış ekranı ve kayan mavi bloklar; en az 10 sn görünür (`sudo bash kur.sh --plymouth`, geri: `--plymouth-geri`) | `plymouth/` |
+| **Plymouth** | Bilgisayar açılırken XP açılış ekranı ve kayan mavi bloklar (en az 10 sn; simpledrm'den başlar, NVIDIA/AMD sürücüsüne geçince yeniden yerleşir); kapanış/yeniden başlatmada "Windows kapatılıyor…" (`sudo bash kur.sh --plymouth`, geri: `--plymouth-geri`) | `plymouth/` |
+| **Oturum sesleri** | Hoş Geldiniz ekranı kapanınca "Windows XP Başlangıç" (açılıştan sonraki ilk girişte) ya da "Oturum Açma"; Oturumu Kapat'ta XP oturum kapatma, Kapat'ta XP kapanış sesi | `session/xp-giris-sesi`, `logout` |
+| **Görev Yöneticisi** | Uygulamalar / İşlemler / Performans (yeşil CPU ve SD göstergeleri, geçmiş grafikleri) / Ağ İletişimi / Kullanıcılar; öncelik ve benzeşim, işlem ağacını sonlandırma; bildirim alanında CPU göstergesi. Ctrl+Shift+Esc ve Ctrl+Alt+Del | `apps/gorev` |
+| **Çalıştır** | XP Çalıştır penceresi (Windows+R): `cmd`, `notepad`, `calc`, `control`, `taskmgr`, `sysdm.cpl`, `desk.cpl`, `%USERPROFILE%`, URL'ler… | `apps/calistir`, `apps/ortak/xpkomut.h` |
+| **Sistem Özellikleri** | Genel (bu bilgisayarın dağıtımı, çekirdeği, işlemcisi, belleği; dağıtım logosu "Üreten ve destekleyen"), Bilgisayar Adı, Donanım, Gelişmiş. Windows+Pause | `apps/sistem` |
+| **Tarih ve Saat Özellikleri** | Takvim, analog saat, XP saat dilimi haritası, Internet Saati (timedatectl / timesyncd) | `apps/tarihsaat` |
+| **Görüntü Özellikleri** | Temalar, Masaüstü (duvar kağıdı, konum, renk), Ekran Koruyucu (ekran kilidi), Görünüm (yazı tipi boyutu), Ayarlar (çözünürlük) | `apps/gorunum` |
+| **Windows Hakkında** | `winver` ve programların Hakkında kutusu: XP şeridi, sürüm, kullanıcı, bellek | `apps/hakkinda` |
+| **Gerçek XP programları** | Kendi XP kopyandaki Hesap Makinesi, Paint, WordPad, Karakter Eşlem, Ses Kaydedicisi, Mayın Tarlası, Solitaire, FreeCell, Hearts, Örümcek Solitaire ve 3D Pinball, Wine ile ve Luna temasıyla (ayrı ön ek: `~/.local/share/xpthemeplasma/wine`) | `session/xp-wine` |
+| **XP kısayolları** | XP oturumunda: Ctrl+Alt+Del / Ctrl+Shift+Esc Görev Yöneticisi, Windows+R Çalıştır, Windows+E Gezgin, Windows+Pause Sistem, Print Screen ekranı sessizce panoya | `session/xp-profil` |
 | **Tüm Programlar** | XP düzeni: Donatılar (Erişilebilirlik, Eğlence, İletişim, Sistem Araçları), Başlangıç, Oyunlar; uygulamalar XP adlarıyla (Not Defteri, Paint, Hesap Makinesi, Internet Explorer, Windows Media Player…) | `xpstart/.../code/xpdizin.js` |
 | **Not Defteri** | XP Not Defteri'nin menüleri ve iletileriyle Qt metin düzenleyici (yalnızca XP oturumunda görünür, `.txt` varsayılanı) | `apps/notdefteri` |
 | **XP Alt+Tab** | CoolSwitch: 3B yüzey, simge ızgarası, çökük başlık kutusu | `kwin/tabbox/xp_alttab` |
@@ -71,7 +80,12 @@ sudo bash kur.sh --sddm-xp     # (isteğe bağlı) SDDM'de XP karşılama ekran�
 
 Sonra oturumu kapat, SDDM'de **XPThemePlasma (Wayland)** seç.
 
+XP sistem programlarının pencere düzenleri ve metinleri kurulumda kendi XP kopyandan (`taskmgr.exe`, `sysdm.cpl`,
+`timedate.cpl`, `themeui.dll`, `shell32.dll`… iletişim kutusu kaynakları) çıkarılır (`tools/gen_luna_dlg.py`) ve
+`apps/ortak/xpdlg.h` bunları Qt ile birebir kurar; depoya Microsoft metni ya da görseli girmez.
+
 Gerekenler: Plasma 6.8, `kvantum`, `python3` + `python-pillow` + `python-numpy`, `rsvg-convert` (librsvg), `msgfmt` (gettext),
+isteğe bağlı `wine` (gerçek XP programları),
 Tahoma / Trebuchet MS / Franklin Gothic yazı tipleri (ör. `ttf-ms-win11-auto`).
 
 ## ATP ile birlikte nasıl çalışır?
