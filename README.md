@@ -80,6 +80,7 @@ Windows 7 için yaptığını, Windows XP için yapar ve ATP ile **yan yana** ç
 ## Kurulum
 
 ```bash
+git clone https://github.com/YYOzcan/xpthemeplasma && cd xpthemeplasma
 bash kur.sh                    # görselleri üretir, ~/.local ve ~/.config altına kurar (sudo gerekmez)
 bash kur.sh --xp "/yol/Windows XP.iso"   # (isteğe bağlı) kendi XP kopyandan gerçek varlıklar
 sudo bash kur.sh --sistem      # SDDM oturum girdisi, /usr/local/bin/startxp-wayland, XP karşılama teması
